@@ -1,10 +1,9 @@
 {
   "name": "ziioz-backend",
   "version": "1.0.0",
-  "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.ts",
+    "dev": "ts-node-dev index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -14,10 +13,10 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.13",
     "@types/express": "^4.17.21",
-    "@types/node": "^20.5.7",
-    "nodemon": "^3.0.2",
-    "typescript": "^5.2.2"
+    "@types/node": "^20.5.6",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
   }
 }
