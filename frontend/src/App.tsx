@@ -8,7 +8,11 @@ function App() {
     fetch(`${import.meta.env.VITE_API_BASE_URL}/`)
       .then(res => res.text())
       .then(data => setMessage(data))
-      .catch(err => setMessage("⚠️ Failed to connect to backend"));
+.catch((err) => {
+  console.error(err);
+  setMessage("Failed to connect to backend");
+});
+
   }, []);
 
   return (
