@@ -1,22 +1,23 @@
-import { useEffect, useState } from 'react';
-import './App.css';
+/* App.css — clean and ready for ZiiOZ frontend */
 
-function App() {
-  const [message, setMessage] = useState('Loading...');
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/`)
-      .then(res => res.text())
-      .then(data => setMessage(data))
-      .catch(err => setMessage("⚠️ Failed to connect to backend"));
-  }, []);
-
-  return (
-    <div className="app">
-      <h1>🚀 ZiiOZ Platform</h1>
-      <p>{message}</p>
-    </div>
-  );
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  padding: 2rem;
 }
 
-export default App;
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 1.2rem;
+}
