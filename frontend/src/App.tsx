@@ -1,7 +1,7 @@
 // App.tsx
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
-import BoostButton from './components/BoostButton';
+import BoostButton from './BoostButton';
 import './App.css';
 
 interface Post {
