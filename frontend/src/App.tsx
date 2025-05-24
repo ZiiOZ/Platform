@@ -51,19 +51,14 @@ function App() {
     if (file) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const { data, error } = await supabase.storage
-        .from('posts')
-        .upload(fileName, file);
-
-      if (data) {
-    const { data, error } = await supabase.storage.from('posts').upload(fileName, file);
-if (error) console.error('Image upload error:', error);
-
-
+      const upload = await supabase.storage.from('posts').upload(fileName, file);
+      if (!upload.error) {
+        const { data: publicUrlData } = supabase.storage.from('posts').getPublicUrl(fileName);
+        imageUrl = publicUrlData.publicUrl;
       }
     }
 
-    const { data: newPost, error } = await supabase.from('posts').insert([
+    const insert = await supabase.from('posts').insert([
       {
         content,
         author: author || 'Anonymous',
@@ -71,8 +66,8 @@ if (error) console.error('Image upload error:', error);
       },
     ]);
 
-    if (!error && newPost) {
-      setPosts([newPost[0], ...posts]);
+    if (!insert.error && insert.data) {
+      setPosts([insert.data[0], ...posts]);
       setContent('');
       setAuthor('');
       setFile(null);
