@@ -1,3 +1,4 @@
+// src/components/BoostButton.tsx
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -7,7 +8,7 @@ interface BoostButtonProps {
 }
 
 function BoostButton({ commentId, currentBoosts }: BoostButtonProps) {
-  const [boosts, setBoosts] = useState(currentBoosts);
+  const [boosts, setBoosts] = useState<number>(currentBoosts ?? 0);
   const [boosting, setBoosting] = useState(false);
 
   const handleBoost = async () => {
@@ -15,10 +16,12 @@ function BoostButton({ commentId, currentBoosts }: BoostButtonProps) {
     const { data, error } = await supabase
       .from('comments')
       .update({ boosts: boosts + 1 })
-      .eq('id', commentId);
+      .eq('id', commentId)
+      .select()
+      .single();
 
     if (!error && data) {
-      setBoosts(boosts + 1);
+      setBoosts(data.boosts);
     }
     setBoosting(false);
   };
@@ -27,9 +30,9 @@ function BoostButton({ commentId, currentBoosts }: BoostButtonProps) {
     <button
       onClick={handleBoost}
       disabled={boosting}
-      className="ml-4 px-3 py-1 rounded bg-yellow-400 hover:bg-yellow-500 text-black text-sm"
+      className="text-sm bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 rounded"
     >
-      🔥 {boosts}
+      🔥 Boost ({boosts})
     </button>
   );
 }
