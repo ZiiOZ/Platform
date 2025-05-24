@@ -56,8 +56,9 @@ function App() {
         .upload(fileName, file);
 
       if (data) {
-      const { data: { publicUrl } } = supabase.storage.from('posts').getPublicUrl(fileName);
-imageUrl = publicUrl;
+    const { data, error } = await supabase.storage.from('posts').upload(fileName, file);
+if (error) console.error('Image upload error:', error);
+
 
       }
     }
