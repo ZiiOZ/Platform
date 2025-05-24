@@ -56,10 +56,9 @@ function App() {
         .upload(fileName, file);
 
       if (data) {
-        const { publicUrl } = supabase.storage.from('posts').getPublicUrl(data.path);
-        imageUrl = publicUrl;
-      } else {
-        console.error('Upload error:', error);
+      const { data: { publicUrl } } = supabase.storage.from('posts').getPublicUrl(fileName);
+imageUrl = publicUrl;
+
       }
     }
 
