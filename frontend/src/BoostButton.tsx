@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { supabase } from './supabaseClient';
+import { supabase } from '../supabaseClient';
 
 interface BoostButtonProps {
   commentId: number;
   currentBoosts: number;
 }
 
-export default function BoostButton({ commentId, currentBoosts }: BoostButtonProps) {
+function BoostButton({ commentId, currentBoosts }: BoostButtonProps) {
   const [boosts, setBoosts] = useState(currentBoosts);
-  const [loading, setLoading] = useState(false);
+  const [boosting, setBoosting] = useState(false);
 
   const handleBoost = async () => {
-    setLoading(true);
+    setBoosting(true);
     const { data, error } = await supabase
       .from('comments')
       .update({ boosts: boosts + 1 })
@@ -19,19 +19,19 @@ export default function BoostButton({ commentId, currentBoosts }: BoostButtonPro
 
     if (!error && data) {
       setBoosts(boosts + 1);
-    } else {
-      console.error('Boost failed:', error);
     }
-    setLoading(false);
+    setBoosting(false);
   };
 
   return (
     <button
       onClick={handleBoost}
-      disabled={loading}
-      className="text-xs bg-yellow-500 hover:bg-yellow-600 text-black px-2 py-1 rounded"
+      disabled={boosting}
+      className="ml-4 px-3 py-1 rounded bg-yellow-400 hover:bg-yellow-500 text-black text-sm"
     >
-      🚀 Boost ({boosts})
+      🔥 {boosts}
     </button>
   );
 }
+
+export default BoostButton;
