@@ -14,78 +14,63 @@ interface Flick {
 function ZiiFlickFeed() {
   const [flicks, setFlicks] = useState<Flick[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchFlicks = async () => {
-    const { data, error } = await supabase
-      .from('ZiiFlicks')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Fetch error:', error.message);
-    } else {
-      setFlicks(data);
-    }
-    setLoading(false);
-  };
-
-  const toggleVisibility = async (id: string, current: boolean) => {
-    const { error } = await supabase
-      .from('ZiiFlicks')
-      .update({ is_visible: !current })
-      .eq('id', id);
-    if (!error) fetchFlicks();
-  };
-
-  const deleteFlick = async (id: string) => {
-    const confirm = window.confirm('Delete this ZiiFlick?');
-    if (!confirm) return;
-
-    const { error } = await supabase.from('ZiiFlicks').delete().eq('id', id);
-    if (!error) fetchFlicks();
-  };
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const fetchFlicks = async () => {
+      const { data, error } = await supabase
+        .from('ZiiFlicks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Fetch error:', error.message);
+      } else {
+        setFlicks(data);
+      }
+      setLoading(false);
+    };
+
     fetchFlicks();
   }, []);
 
+  const filteredFlicks = flicks.filter(flick =>
+    flick.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (flick.creator_name?.toLowerCase() ?? '').includes(searchQuery.toLowerCase()) ||
+    (flick.tags?.toLowerCase() ?? '').includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="mt-10">
-      <h3 className="text-md font-semibold mb-3">ZiiFlick Preview (Admin Control)</h3>
+    <div className="mt-8">
+      <h3 className="text-md font-semibold mb-2">ZiiFlick Preview (Admin Control)</h3>
+      
+      <input
+        type="text"
+        placeholder="Search by title, creator, or tag"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="border p-1 mb-4 w-full"
+      />
+
       {loading ? (
         <p>Loading...</p>
-      ) : flicks.length === 0 ? (
+      ) : filteredFlicks.length === 0 ? (
         <p>No flicks yet.</p>
       ) : (
         <div className="grid gap-4">
-          {flicks.map((flick) => (
-            <div key={flick.id} className="border p-3 rounded shadow bg-white">
-              <h4 className="text-lg font-semibold">{flick.title}</h4>
+          {filteredFlicks.map((flick) => (
+            <div key={flick.id} className="border p-3 rounded shadow">
+              <h4 className="text-md font-bold">{flick.title}</h4>
               <p className="text-sm text-gray-600">
-                Creator: {flick.creator_name || 'Unknown'} | Tags: {flick.tags || '—'}
+                Creator: {flick.creator_name || 'Unknown'} | Tags: {flick.tags || 'None'}
               </p>
-              <video
-                controls
-                src={flick.video_url}
-                className="w-full mt-2 rounded max-h-[400px]"
-              />
+              <video controls src={flick.video_url} className="w-full mt-2 max-h-[360px]" />
               <p className="text-xs text-gray-500 mt-1">
                 Uploaded: {new Date(flick.created_at).toLocaleString()}
               </p>
-              <div className="flex gap-4 mt-2 text-sm">
-                <button
-                  onClick={() => toggleVisibility(flick.id, flick.is_visible)}
-                  className="bg-yellow-500 text-white px-2 py-1 rounded"
-                >
-                  {flick.is_visible ? 'Hide' : 'Make Visible'}
-                </button>
-                <button
-                  onClick={() => deleteFlick(flick.id)}
-                  className="bg-red-600 text-white px-2 py-1 rounded"
-                >
-                  Delete
-                </button>
-              </div>
+              <p className="text-xs text-green-700">
+                {flick.is_visible ? 'Visible' : 'Hidden'}
+              </p>
             </div>
           ))}
         </div>
