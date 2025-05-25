@@ -15,24 +15,37 @@ function ZiiFlickFeed({ reload }: { reload: boolean }) {
   const [flicks, setFlicks] = useState<Flick[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchFlicks = async () => {
+    const { data, error } = await supabase
+      .from('ZiiFlicks')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Fetch error:', error.message);
+    } else {
+      setFlicks(data);
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchFlicks = async () => {
-      const { data, error } = await supabase
-        .from('ZiiFlicks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Fetch error:', error.message);
-      } else {
-        setFlicks(data);
-      }
-
-      setLoading(false);
-    };
-
     fetchFlicks();
   }, [reload]);
+
+  const toggleVisibility = async (id: string, current: boolean) => {
+    const { error } = await supabase
+      .from('ZiiFlicks')
+      .update({ is_visible: !current })
+      .eq('id', id);
+
+    if (error) {
+      alert('Failed to update visibility: ' + error.message);
+    } else {
+      fetchFlicks(); // refresh UI
+    }
+  };
 
   return (
     <div className="mt-8">
@@ -53,9 +66,14 @@ function ZiiFlickFeed({ reload }: { reload: boolean }) {
               <p className="text-xs text-gray-500 mt-1">
                 Uploaded: {new Date(flick.created_at).toLocaleString()}
               </p>
-              <p className="text-xs text-green-700">
-                {flick.is_visible ? 'Visible' : 'Hidden'}
-              </p>
+              <button
+                onClick={() => toggleVisibility(flick.id, flick.is_visible)}
+                className={`text-xs px-2 py-1 rounded mt-2 ${
+                  flick.is_visible ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                {flick.is_visible ? '👁 Visible (Click to Hide)' : '🙈 Hidden (Click to Show)'}
+              </button>
             </div>
           ))}
         </div>
