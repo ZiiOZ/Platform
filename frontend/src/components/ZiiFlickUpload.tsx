@@ -8,6 +8,24 @@ function ZiiFlickUpload() {
   const [tags, setTags] = useState('');
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+
+  const handleGenerateTags = async () => {
+    if (!title && !file) return;
+
+    const input = `${title || ''} ${file?.name || ''}`;
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/generate-tags`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input })
+    });
+
+    const data = await response.json();
+    if (data?.tags) {
+      setSuggestedTags(data.tags);
+      setTags(data.tags.join(', '));
+    }
+  };
 
   const handleUpload = async () => {
     if (!file || !title) {
@@ -19,7 +37,6 @@ function ZiiFlickUpload() {
     setStatus('');
 
     const filename = `${Date.now()}_${file.name}`;
-
     const { data: storageData, error: storageError } = await supabase
       .storage
       .from('ziiflicks')
@@ -27,7 +44,7 @@ function ZiiFlickUpload() {
 
     if (storageError) {
       console.error(storageError);
-      setStatus('Upload to storage failed');
+      setStatus('Upload failed');
       setUploading(false);
       return;
     }
@@ -44,63 +61,74 @@ function ZiiFlickUpload() {
           title,
           video_url: publicURLData.publicUrl,
           creator_name: creatorName || 'Admin',
-          tags: tags ? tags.split(',').map(t => t.trim()) : [],
-          is_visible: false // default to hidden
+          tags: tags.split(',').map(t => t.trim()),
+          is_visible: false
         }
       ]);
 
     if (insertError) {
       console.error(insertError);
-      setStatus('Failed to save flick metadata');
+      setStatus('Database insert failed');
     } else {
       setStatus('✅ Flick uploaded (hidden)');
       setFile(null);
       setTitle('');
       setCreatorName('');
       setTags('');
+      setSuggestedTags([]);
     }
 
     setUploading(false);
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-4 bg-gray-100 rounded shadow">
-      <h2 className="text-xl font-semibold mb-4">Upload ZiiFlick (Internal Only)</h2>
+    <div className="bg-gray-100 rounded p-4">
+      <h2 className="text-xl font-bold mb-2">Upload ZiiFlick (Internal Only)</h2>
       <input
         type="text"
         placeholder="Title"
-        className="w-full mb-2 px-2 py-1 border rounded"
+        className="w-full mb-2 p-1 border rounded"
         value={title}
-        onChange={e => setTitle(e.target.value)}
+        onChange={(e) => setTitle(e.target.value)}
       />
       <input
         type="text"
         placeholder="Creator (optional)"
-        className="w-full mb-2 px-2 py-1 border rounded"
+        className="w-full mb-2 p-1 border rounded"
         value={creatorName}
-        onChange={e => setCreatorName(e.target.value)}
+        onChange={(e) => setCreatorName(e.target.value)}
       />
       <input
         type="text"
-        placeholder="Tags (comma-separated)"
-        className="w-full mb-2 px-2 py-1 border rounded"
+        placeholder="Tags (comma separated)"
+        className="w-full mb-2 p-1 border rounded"
         value={tags}
-        onChange={e => setTags(e.target.value)}
+        onChange={(e) => setTags(e.target.value)}
       />
-      <input
-        type="file"
-        accept="video/*"
-        className="w-full mb-2"
-        onChange={e => setFile(e.target.files?.[0] || null)}
-      />
+      <div className="flex justify-between items-center mb-2">
+        <input
+          type="file"
+          accept="video/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+        <button
+          className="text-sm bg-blue-500 text-white px-3 py-1 rounded ml-2"
+          onClick={handleGenerateTags}
+        >
+          Suggest Tags
+        </button>
+      </div>
+      {suggestedTags.length > 0 && (
+        <p className="text-xs text-gray-600 mb-2">Suggested: {suggestedTags.join(', ')}</p>
+      )}
       <button
         onClick={handleUpload}
         disabled={uploading}
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        className="bg-green-600 text-white px-4 py-2 rounded w-full"
       >
         {uploading ? 'Uploading...' : 'Upload Flick'}
       </button>
-      {status && <p className="mt-2 text-sm text-center">{status}</p>}
+      {status && <p className="text-sm mt-2 text-center">{status}</p>}
     </div>
   );
 }

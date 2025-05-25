@@ -1,6 +1,13 @@
 import './App.css';
 import ZiiFlickUpload from './components/ZiiFlickUpload';
-import ZiiFlickFeed from './components/ZiiFlickFeed';
+import ZiiFlickSwipe from './components/ZiiFlickSwipe';
+
+function App() {
+  return (
+    <ZiiFlickSwipe />
+  );
+}
+
 
 function App() {
   return (
