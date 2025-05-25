@@ -1,34 +1,18 @@
-import { useEffect, useState } from 'react';
+import './App.css';
 import ZiiFlickUpload from './components/ZiiFlickUpload';
 import ZiiFlickFeed from './components/ZiiFlickFeed';
 
 function App() {
   return (
-    <div>
-      <ZiiFlickUpload />
-      <ZiiFlickFeed />
-    </div>
-  );
-}
+    <div className="min-h-screen bg-gray-50 text-black p-4">
+      <header className="text-center mb-6">
+        <h1 className="text-3xl font-bold">🚀 ZiiOZ Platform v1</h1>
+        <p className="text-sm text-gray-600">Internal ZiiFlick Admin Panel</p>
+      </header>
 
-function App() {
-  const [message, setMessage] = useState('Loading...');
-
-  useEffect(() => {
-    fetch('https://ziioz-backend-platform.onrender.com/') // Replace with exact backend URL
-      .then(res => res.text())
-      .then(data => setMessage(data))
-      .catch(err => {
-        console.error(err);
-        setMessage('❌ Backend error');
-      });
-  }, []);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 text-black text-center">
-      <div>
-        <h1 className="text-3xl font-bold mb-4">🚀 ZiiOZ Platform</h1>
-        <p className="text-xl">{message}</p>
+      <div className="grid md:grid-cols-2 gap-6">
+        <ZiiFlickUpload />
+        <ZiiFlickFeed />
       </div>
     </div>
   );
