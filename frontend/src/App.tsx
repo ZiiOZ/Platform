@@ -1,27 +1,11 @@
-import { useState } from 'react';
-import ZiiFlickUpload from './components/ZiiFlickUpload';
-import ZiiFlickFeed from './components/ZiiFlickFeed';
+// src/App.tsx
+
 import ZiiFlickPublic from './components/ZiiFlickPublic';
 
 function App() {
   return (
-    <div>
-      {/* Other panels or routes */}
+    <div className="min-h-screen bg-gray-50 p-6">
       <ZiiFlickPublic />
-    </div>
-  );
-}
-
-export default App;
-
-
-function App() {
-  const [reloadFlag, setReloadFlag] = useState(false);
-
-  return (
-    <div className="p-6">
-      <ZiiFlickUpload onUploadSuccess={() => setReloadFlag(!reloadFlag)} />
-      <ZiiFlickFeed reload={reloadFlag} />
     </div>
   );
 }
