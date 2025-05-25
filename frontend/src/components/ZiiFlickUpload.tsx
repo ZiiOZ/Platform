@@ -21,34 +21,32 @@ function ZiiFlickUpload() {
       .upload(filename, file);
 
     if (uploadError) {
-      alert('Upload failed');
+      alert('Upload failed: ' + uploadError.message);
       setUploading(false);
       return;
     }
 
-    const videoUrl = `https://your-project-id.supabase.co/storage/v1/object/public/ziiflicks/${filename}`;
-    const { error: insertError } = await supabase
-      .from('ziiflicks')
-      .insert([
-        {
-          title,
-          video_url: videoUrl,
-          creator_name: creator,
-          tags,
-          is_visible: isVisible,
-        },
-      ]);
+    const video_url = `https://jgxhjtdyaodffyhzzlpy.supabase.co/storage/v1/object/public/ziiflicks/${filename}`;
+    const { error: insertError } = await supabase.from('ZiiFlicks').insert({
+      title,
+      creator_name: creator,
+      tags,
+      video_url,
+      is_visible: isVisible,
+    });
 
-    setUploading(false);
     if (insertError) {
-      alert('Insert failed');
+      alert('Insert failed: ' + insertError.message);
+      console.error('Insert error:', insertError);
     } else {
+      alert('Upload + Insert successful!');
       setTitle('');
       setCreator('');
       setTags('');
       setFile(null);
-      alert('Upload successful!');
     }
+
+    setUploading(false);
   };
 
   return (
