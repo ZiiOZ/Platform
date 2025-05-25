@@ -24,11 +24,7 @@ function ZiiFlickFeed() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Fetch error:', error.message);
-    } else {
-      setFlicks(data);
-    }
+    if (!error && data) setFlicks(data);
     setLoading(false);
   };
 
@@ -42,24 +38,15 @@ function ZiiFlickFeed() {
       .update({ is_visible: !current })
       .eq('id', id);
 
-    if (error) {
-      alert('Toggle failed: ' + error.message);
-    } else {
-      fetchFlicks();
-    }
+    if (!error) fetchFlicks();
   };
 
   const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this flick?');
+    const confirmDelete = window.confirm('Delete this flick?');
     if (!confirmDelete) return;
 
     const { error } = await supabase.from('ZiiFlicks').delete().eq('id', id);
-
-    if (error) {
-      alert('Delete failed: ' + error.message);
-    } else {
-      fetchFlicks();
-    }
+    if (!error) fetchFlicks();
   };
 
   const filteredFlicks = flicks.filter((flick) =>
@@ -69,41 +56,51 @@ function ZiiFlickFeed() {
   );
 
   return (
-    <div className="mt-8">
-      <h3 className="text-md font-semibold mb-2">ZiiFlick Preview (Admin Control)</h3>
+    <div className="mt-10">
+      <h3 className="text-xl font-bold mb-4">ZiiFlick Admin Panel</h3>
+
       <input
         type="text"
         placeholder="Search by title, creator or tags"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="border p-1 mb-3 w-full max-w-sm"
+        className="w-full max-w-md p-2 border border-gray-300 rounded mb-6"
       />
+
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-gray-600">Loading...</p>
       ) : filteredFlicks.length === 0 ? (
-        <p>No flicks yet.</p>
+        <p className="text-gray-500 italic">No flicks found.</p>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredFlicks.map((flick) => (
-            <div key={flick.id} className="border p-3 rounded shadow">
-              <h4 className="text-md font-bold">{flick.title}</h4>
-              <p className="text-sm text-gray-600">
-                Creator: {flick.creator_name || 'Unknown'} | Tags: {flick.tags || 'None'}
+            <div key={flick.id} className="rounded-lg border shadow-md p-4 bg-white">
+              <h4 className="text-lg font-semibold">{flick.title}</h4>
+              <p className="text-sm text-gray-600 mb-1">
+                By: {flick.creator_name || 'Unknown'}
               </p>
-              <video controls src={flick.video_url} className="w-full mt-2 max-h-[360px]" />
-              <p className="text-xs text-gray-500 mt-1">
-                Uploaded: {new Date(flick.created_at).toLocaleString()}
+              <p className="text-xs text-gray-500 mb-2">
+                Tags: {flick.tags || '—'} • {new Date(flick.created_at).toLocaleString()}
               </p>
-              <div className="flex items-center mt-2 gap-3">
+              <video
+                src={flick.video_url}
+                controls
+                className="w-full rounded mb-3 max-h-[340px]"
+              />
+              <div className="flex justify-between gap-3">
                 <button
                   onClick={() => handleToggleVisibility(flick.id, flick.is_visible)}
-                  className="text-sm px-2 py-1 rounded bg-blue-600 text-white"
+                  className={`flex-1 py-1 text-sm rounded ${
+                    flick.is_visible
+                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                      : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
+                  }`}
                 >
                   {flick.is_visible ? 'Hide' : 'Show'}
                 </button>
                 <button
                   onClick={() => handleDelete(flick.id)}
-                  className="text-sm px-2 py-1 rounded bg-red-600 text-white"
+                  className="flex-1 py-1 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
                 >
                   Delete
                 </button>
