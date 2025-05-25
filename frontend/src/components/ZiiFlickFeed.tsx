@@ -13,6 +13,7 @@ interface ZiiFlick {
 
 function ZiiFlickFeed() {
   const [flicks, setFlicks] = useState<ZiiFlick[]>([]);
+  const [search, setSearch] = useState('');
 
   const fetchFlicks = async () => {
     const { data, error } = await supabase
@@ -36,14 +37,27 @@ function ZiiFlickFeed() {
     fetchFlicks();
   }, []);
 
+  const filteredFlicks = flicks.filter(flick =>
+    flick.title.toLowerCase().includes(search.toLowerCase()) ||
+    flick.creator_name.toLowerCase().includes(search.toLowerCase()) ||
+    flick.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+  );
+
   return (
     <div className="p-4 bg-white rounded shadow">
       <h2 className="text-xl font-semibold mb-4">ZiiFlick Preview (Admin Control)</h2>
-      {flicks.length === 0 ? (
+      <input
+        type="text"
+        placeholder="Search by title, creator or tag..."
+        className="mb-4 w-full p-2 border rounded"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      {filteredFlicks.length === 0 ? (
         <p className="text-gray-500 text-center">No flicks yet.</p>
       ) : (
         <div className="space-y-6">
-          {flicks.map(flick => (
+          {filteredFlicks.map(flick => (
             <div key={flick.id} className="border p-3 rounded shadow-sm">
               <video src={flick.video_url} controls className="w-full rounded mb-2" />
               <h3 className="font-semibold">{flick.title}</h3>
