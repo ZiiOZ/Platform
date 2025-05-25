@@ -1,9 +1,11 @@
-// src/components/ZiiFlickUpload.tsx
-
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-function ZiiFlickUpload() {
+interface ZiiFlickUploadProps {
+  onUploadSuccess: () => void;
+}
+
+function ZiiFlickUpload({ onUploadSuccess }: ZiiFlickUploadProps) {
   const [title, setTitle] = useState('');
   const [creator, setCreator] = useState('');
   const [tags, setTags] = useState('');
@@ -32,14 +34,14 @@ function ZiiFlickUpload() {
       creator_name: creator,
       tags,
       video_url,
-      is_visible: isVisible,
+      is_visible: isVisible
     });
 
     if (insertError) {
       alert('Insert failed: ' + insertError.message);
-      console.error('Insert error:', insertError);
     } else {
       alert('Upload + Insert successful!');
+      onUploadSuccess(); // trigger feed refresh
       setTitle('');
       setCreator('');
       setTags('');

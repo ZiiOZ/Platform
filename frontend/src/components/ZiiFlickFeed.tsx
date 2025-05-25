@@ -1,5 +1,3 @@
-// src/components/ZiiFlickFeed.tsx
-
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -13,7 +11,7 @@ interface Flick {
   is_visible: boolean;
 }
 
-function ZiiFlickFeed() {
+function ZiiFlickFeed({ reload }: { reload: boolean }) {
   const [flicks, setFlicks] = useState<Flick[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,11 +27,12 @@ function ZiiFlickFeed() {
       } else {
         setFlicks(data);
       }
+
       setLoading(false);
     };
 
     fetchFlicks();
-  }, []);
+  }, [reload]);
 
   return (
     <div className="mt-8">
