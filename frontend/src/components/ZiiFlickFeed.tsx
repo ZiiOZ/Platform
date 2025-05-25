@@ -29,9 +29,7 @@ function ZiiFlickFeed() {
       .update({ is_visible: !current })
       .eq('id', id);
 
-    if (!error) {
-      fetchFlicks();
-    }
+    if (!error) fetchFlicks();
   };
 
   useEffect(() => {

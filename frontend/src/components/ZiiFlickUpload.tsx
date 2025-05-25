@@ -14,7 +14,7 @@ function ZiiFlickUpload() {
     if (!title && !file) return;
 
     const input = `${title || ''} ${file?.name || ''}`;
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/generate-tags`, {
+    const response = await fetch(`https://ziioz-backend-platform.onrender.com/generate-tags`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input })

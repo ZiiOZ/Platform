@@ -1,7 +1,6 @@
 import './App.css';
 import ZiiFlickUpload from './components/ZiiFlickUpload';
 import ZiiFlickFeed from './components/ZiiFlickFeed';
-// import ZiiFlickSwipe from './components/ZiiFlickSwipe'; // Optional preview interface
 
 function App() {
   return (
