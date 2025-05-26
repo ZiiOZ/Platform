@@ -25,10 +25,11 @@ function ZiiFlickPublic() {
         .eq('is_visible', true)
         .order('created_at', { ascending: false });
 
+      console.log('✅ ZiiFlicks fetched:', data);
       if (error) {
-        console.error('Fetch error:', error.message);
+        console.error('❌ Fetch error:', error.message);
       } else {
-        setFlicks(data);
+        setFlicks(data || []);
       }
       setLoading(false);
     };
