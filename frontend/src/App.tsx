@@ -1,19 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ZiiFlickManager from './components/ZiiFlickManager';
+import ZiiFlickUpload from './components/ZiiFlickUpload';
 import ZiiFlickPublic from './components/ZiiFlickPublic';
-import ZiiPostForm from './components/ZiiPostForm';
-
-<Routes>
-  <Route path="/ziipost" element={<ZiiPostForm />} />
-</Routes>
-
+import ZiiPostFeed from './components/ZiiPostFeed'; // ✅
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<ZiiFlickManager />} />
+        <Route path="/" element={<ZiiFlickUpload />} />
         <Route path="/ziiflicks" element={<ZiiFlickPublic />} />
+        <Route path="/ziiposts" element={<ZiiPostFeed />} /> {/* ✅ New route */}
       </Routes>
     </Router>
   );
