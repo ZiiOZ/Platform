@@ -18,7 +18,7 @@ function ZiiPostFeed() {
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase
-        .from('posts') // ✅ match table name exactly
+        .from('posts')
         .select('*')
         .order('created_at', { ascending: false });
 
