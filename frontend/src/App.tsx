@@ -1,12 +1,16 @@
-// src/App.tsx
-
-import ZiiFlickPublic from './components/ZiiFlickPublic';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ZiiFlickUpload from './components/ZiiFlickUpload';
+import ZiiFlickFeed from './components/ZiiFlickFeed';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <ZiiFlickPublic />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<ZiiFlickFeed />} />
+        <Route path="/upload" element={<ZiiFlickUpload />} />
+        <Route path="/viewer" element={<ZiiFlickFeed />} />
+      </Routes>
+    </Router>
   );
 }
 
