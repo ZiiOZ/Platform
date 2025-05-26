@@ -16,95 +16,47 @@ interface Flick {
 function ZiiFlickFeed() {
   const [flicks, setFlicks] = useState<Flick[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-
-  const fetchFlicks = async () => {
-    const { data, error } = await supabase
-      .from('ZiiFlicks')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) setFlicks(data);
-    setLoading(false);
-  };
 
   useEffect(() => {
+    const fetchFlicks = async () => {
+      const { data, error } = await supabase
+        .from('ZiiFlicks')
+        .select('*')
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Fetch error:', error.message);
+      } else {
+        setFlicks(data);
+      }
+      setLoading(false);
+    };
+
     fetchFlicks();
   }, []);
 
-  const handleToggleVisibility = async (id: string, current: boolean) => {
-    const { error } = await supabase
-      .from('ZiiFlicks')
-      .update({ is_visible: !current })
-      .eq('id', id);
-
-    if (!error) fetchFlicks();
-  };
-
-  const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Delete this flick?');
-    if (!confirmDelete) return;
-
-    const { error } = await supabase.from('ZiiFlicks').delete().eq('id', id);
-    if (!error) fetchFlicks();
-  };
-
-  const filteredFlicks = flicks.filter((flick) =>
-    flick.title.toLowerCase().includes(search.toLowerCase()) ||
-    flick.creator_name?.toLowerCase().includes(search.toLowerCase()) ||
-    flick.tags?.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
-    <div className="mt-10">
-      <h3 className="text-xl font-bold mb-4">ZiiFlick Admin Panel</h3>
-
-      <input
-        type="text"
-        placeholder="Search by title, creator or tags"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full max-w-md p-2 border border-gray-300 rounded mb-6"
-      />
-
+    <div className="mt-8">
+      <h2 className="text-xl font-semibold mb-4">🎬 Latest ZiiFlicks</h2>
       {loading ? (
-        <p className="text-gray-600">Loading...</p>
-      ) : filteredFlicks.length === 0 ? (
-        <p className="text-gray-500 italic">No flicks found.</p>
+        <p>Loading...</p>
+      ) : flicks.length === 0 ? (
+        <p>No flicks available to display.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredFlicks.map((flick) => (
-            <div key={flick.id} className="rounded-lg border shadow-md p-4 bg-white">
-              <h4 className="text-lg font-semibold">{flick.title}</h4>
-              <p className="text-sm text-gray-600 mb-1">
-                By: {flick.creator_name || 'Unknown'}
+        <div className="grid gap-6">
+          {flicks.map((flick) => (
+            <div key={flick.id} className="border rounded shadow p-4">
+              <h3 className="text-lg font-bold mb-1">{flick.title}</h3>
+              <video controls src={flick.video_url} className="w-full max-h-[400px] mb-2" />
+              <p className="text-sm text-gray-600">
+                By {flick.creator_name || 'Unknown'} • {new Date(flick.created_at).toLocaleString()}
               </p>
-              <p className="text-xs text-gray-500 mb-2">
-                Tags: {flick.tags || '—'} • {new Date(flick.created_at).toLocaleString()}
-              </p>
-              <video
-                src={flick.video_url}
-                controls
-                className="w-full rounded mb-3 max-h-[340px]"
-              />
-              <div className="flex justify-between gap-3">
-                <button
-                  onClick={() => handleToggleVisibility(flick.id, flick.is_visible)}
-                  className={`flex-1 py-1 text-sm rounded ${
-                    flick.is_visible
-                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                      : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
-                  }`}
-                >
-                  {flick.is_visible ? 'Hide' : 'Show'}
-                </button>
-                <button
-                  onClick={() => handleDelete(flick.id)}
-                  className="flex-1 py-1 text-sm rounded bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Delete
-                </button>
-              </div>
+              {flick.tags && (
+                <div className="mt-1 text-xs text-blue-600 italic">
+                  Tags: {flick.tags.split(',').map(tag => <span key={tag} className="mr-1">#{tag.trim()}</span>)}
+                </div>
+              )}
             </div>
           ))}
         </div>

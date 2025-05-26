@@ -1,11 +1,9 @@
+// Update to ZiiFlickUpload.tsx to trigger live tag generation from the backend
+
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-interface ZiiFlickUploadProps {
-  onUploadSuccess: () => void;
-}
-
-function ZiiFlickUpload({ onUploadSuccess }: ZiiFlickUploadProps) {
+function ZiiFlickUpload() {
   const [title, setTitle] = useState('');
   const [creator, setCreator] = useState('');
   const [tags, setTags] = useState('');
@@ -13,14 +11,27 @@ function ZiiFlickUpload({ onUploadSuccess }: ZiiFlickUploadProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  const generateTags = async (input: string) => {
+    try {
+      const response = await fetch('https://ziioz-backend-platform.onrender.com/generate-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input })
+      });
+      const data = await response.json();
+      return data.tags?.join(', ') ?? '';
+    } catch (err) {
+      console.error('Tag generation failed:', err);
+      return '';
+    }
+  };
+
   const handleUpload = async () => {
     if (!file || !title) return alert('Title and file are required');
     setUploading(true);
 
     const filename = `${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('ziiflicks')
-      .upload(filename, file);
+    const { error: uploadError } = await supabase.storage.from('ziiflicks').upload(filename, file);
 
     if (uploadError) {
       alert('Upload failed: ' + uploadError.message);
@@ -29,71 +40,39 @@ function ZiiFlickUpload({ onUploadSuccess }: ZiiFlickUploadProps) {
     }
 
     const video_url = `https://jgxhjtdyaodffyhzzlpy.supabase.co/storage/v1/object/public/ziiflicks/${filename}`;
+    const generatedTags = await generateTags(title);
+
     const { error: insertError } = await supabase.from('ZiiFlicks').insert({
       title,
       creator_name: creator,
-      tags,
+      tags: generatedTags,
       video_url,
-      is_visible: isVisible
+      is_visible
     });
 
+    setUploading(false);
     if (insertError) {
-      alert('Insert failed: ' + insertError.message);
+      alert('Insert failed');
     } else {
-      alert('Upload + Insert successful!');
-      onUploadSuccess(); // trigger feed refresh
       setTitle('');
       setCreator('');
       setTags('');
       setFile(null);
+      alert('Upload + Insert successful!');
     }
-
-    setUploading(false);
   };
 
   return (
     <div>
       <h2 className="text-lg font-semibold mt-6">Upload ZiiFlick (Internal Only)</h2>
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border p-1 m-1"
-      />
-      <input
-        type="text"
-        placeholder="Creator (optional)"
-        value={creator}
-        onChange={(e) => setCreator(e.target.value)}
-        className="border p-1 m-1"
-      />
-      <input
-        type="text"
-        placeholder="Tags (comma separated)"
-        value={tags}
-        onChange={(e) => setTags(e.target.value)}
-        className="border p-1 m-1"
-      />
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="p-1 m-1"
-      />
+      <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border p-1 m-1" />
+      <input type="text" placeholder="Creator (optional)" value={creator} onChange={(e) => setCreator(e.target.value)} className="border p-1 m-1" />
+      <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="p-1 m-1" />
       <label className="block mt-2 ml-1">
-        <input
-          type="checkbox"
-          checked={isVisible}
-          onChange={() => setIsVisible(!isVisible)}
-          className="mr-1"
-        />
+        <input type="checkbox" checked={isVisible} onChange={() => setIsVisible(!isVisible)} className="mr-1" />
         Publish Now
       </label>
-      <button
-        onClick={handleUpload}
-        disabled={uploading}
-        className="bg-black text-white px-4 py-1 mt-3 rounded"
-      >
+      <button onClick={handleUpload} disabled={uploading} className="bg-black text-white px-4 py-1 mt-3 rounded">
         {uploading ? 'Uploading...' : 'Upload Flick'}
       </button>
     </div>
