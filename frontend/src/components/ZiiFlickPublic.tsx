@@ -1,4 +1,5 @@
 // src/components/ZiiFlickPublic.tsx
+
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -24,14 +25,12 @@ function ZiiFlickPublic() {
         .eq('is_visible', true)
         .order('created_at', { ascending: false });
 
-      console.log('✅ ZiiFlicks fetched:', data);
-
       if (error) {
         console.error('❌ Fetch error:', error.message);
       } else {
+        console.log('✅ ZiiFlicks fetched:', data);
         setFlicks(data || []);
       }
-
       setLoading(false);
     };
 
