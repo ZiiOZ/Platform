@@ -1,3 +1,5 @@
+// src/components/ZiiFlickPublic.tsx
+
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -8,6 +10,7 @@ interface Flick {
   video_url: string;
   tags: string;
   created_at: string;
+  is_visible: boolean;
 }
 
 function ZiiFlickPublic() {
@@ -15,43 +18,59 @@ function ZiiFlickPublic() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPublicFlicks = async () => {
+    const fetchFlicks = async () => {
       const { data, error } = await supabase
         .from('ZiiFlicks')
-        .select('id, title, creator_name, tags, video_url, created_at')
+        .select('*')
         .eq('is_visible', true)
         .order('created_at', { ascending: false });
 
-      if (!error && data) setFlicks(data);
+      if (error) {
+        console.error('Fetch error:', error.message);
+      } else {
+        setFlicks(data);
+      }
       setLoading(false);
     };
 
-    fetchPublicFlicks();
+    fetchFlicks();
   }, []);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">🎬 Latest ZiiFlicks</h2>
+    <div className="p-4">
+      <h2 className="text-2xl font-semibold mb-4 flex items-center">
+        🎬 Latest ZiiFlicks
+      </h2>
 
       {loading ? (
-        <p>Loading public flicks...</p>
+        <p>Loading...</p>
       ) : flicks.length === 0 ? (
-        <p className="text-gray-500">No flicks available to display.</p>
+        <p className="text-gray-600 italic">No flicks available to display.</p>
       ) : (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {flicks.map((flick) => (
-            <div key={flick.id} className="rounded-lg border shadow-sm p-4 bg-white">
-              <h3 className="text-lg font-semibold">{flick.title}</h3>
-              <p className="text-sm text-gray-500 mb-2">
-                By: {flick.creator_name || 'Anonymous'} • {new Date(flick.created_at).toLocaleDateString()}
-              </p>
+            <div key={flick.id} className="border rounded-lg shadow p-4 bg-white">
+              <h3 className="text-lg font-bold mb-1">{flick.title}</h3>
               <video
-                src={flick.video_url}
                 controls
-                className="w-full rounded mb-3 max-h-[340px]"
+                src={flick.video_url}
+                className="w-full max-h-[360px] mb-2 rounded"
               />
+              <p className="text-sm text-gray-600">
+                By {flick.creator_name || 'Anonymous'} •{' '}
+                {new Date(flick.created_at).toLocaleString()}
+              </p>
               {flick.tags && (
-                <p className="text-xs text-gray-600">Tags: {flick.tags}</p>
+                <div className="mt-1 text-xs text-blue-600 italic flex flex-wrap">
+                  {flick.tags.split(',').map((tag) => (
+                    <span
+                      key={tag}
+                      className="mr-2 mb-1 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
+                    >
+                      #{tag.trim()}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           ))}
