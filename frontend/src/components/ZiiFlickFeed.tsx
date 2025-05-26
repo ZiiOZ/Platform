@@ -1,5 +1,3 @@
-// src/components/ZiiFlickFeed.tsx
-
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -19,7 +17,7 @@ function ZiiFlickFeed({ refresh }: { refresh: boolean }) {
 
   const fetchFlicks = async () => {
     const { data, error } = await supabase
-      .from('ZiiFlicks')
+      .from('ziiflicks') // ✅ fixed lowercase table name
       .select('*')
       .eq('is_visible', true)
       .order('created_at', { ascending: false });
@@ -34,7 +32,7 @@ function ZiiFlickFeed({ refresh }: { refresh: boolean }) {
 
   useEffect(() => {
     fetchFlicks();
-  }, [refresh]); // 🔁 re-fetch on upload refresh signal
+  }, [refresh]);
 
   return (
     <div className="mt-8">
@@ -48,14 +46,22 @@ function ZiiFlickFeed({ refresh }: { refresh: boolean }) {
           {flicks.map((flick) => (
             <div key={flick.id} className="border rounded shadow p-4">
               <h3 className="text-lg font-bold mb-1">{flick.title}</h3>
-              <video controls src={flick.video_url} className="w-full max-h-[400px] mb-2" />
+              <video
+                controls
+                src={flick.video_url}
+                className="w-full max-h-[400px] mb-2"
+              />
               <p className="text-sm text-gray-600">
-                By {flick.creator_name || 'Unknown'} • {new Date(flick.created_at).toLocaleString()}
+                By {flick.creator_name || 'Unknown'} •{' '}
+                {new Date(flick.created_at).toLocaleString()}
               </p>
               {flick.tags && (
                 <div className="mt-1 text-xs text-blue-600 italic">
-                  Tags: {flick.tags.split(',').map(tag => (
-                    <span key={tag} className="mr-1">#{tag.trim()}</span>
+                  Tags:{' '}
+                  {flick.tags.split(',').map((tag) => (
+                    <span key={tag} className="mr-1">
+                      #{tag.trim()}
+                    </span>
                   ))}
                 </div>
               )}
