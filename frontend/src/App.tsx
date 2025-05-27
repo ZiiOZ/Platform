@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import ZiiPostForm from './components/ZiiPostForm';
 import ZiiPostFeed from './components/ZiiPostFeed';
 
@@ -9,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/ziipostform" element={<ZiiPostForm />} />
         <Route path="/ziiposts" element={<ZiiPostFeed />} />
-        {/* Add more routes here as needed */}
+        <Route path="*" element={<div className="p-6 text-center">Page Not Found</div>} />
       </Routes>
     </Router>
   );
