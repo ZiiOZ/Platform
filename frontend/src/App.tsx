@@ -1,19 +1,15 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import ZiiFlickUpload from './components/ZiiFlickUpload';
-import ZiiFlickPublic from './components/ZiiFlickPublic';
-import ZiiPostFeed from './components/ZiiPostFeed';
+// src/App.tsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ZiiPostForm from './components/ZiiPostForm';
-import NotFound from './components/NotFound';
+import ZiiPostFeed from './components/ZiiPostFeed';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<ZiiFlickUpload />} />
-        <Route path="/ziiflicks" element={<ZiiFlickPublic />} />
+        <Route path="/ziipostform" element={<ZiiPostForm />} />
         <Route path="/ziiposts" element={<ZiiPostFeed />} />
-        <Route path="/create-post" element={<ZiiPostForm />} />
-        <Route path="*" element={<NotFound />} />
+        {/* Add more routes here as needed */}
       </Routes>
     </Router>
   );
