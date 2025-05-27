@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import ZiiCommentSection from './ZiiCommentSection';
+import { Link } from 'react-router-dom';
 
 interface Post {
   id: number;
@@ -64,13 +65,8 @@ const ZiiPostFeed = () => {
     }
   };
 
-  if (loading) {
-    return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
-  }
-
-  if (posts.length === 0) {
-    return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
-  }
+  if (loading) return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
+  if (posts.length === 0) return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -79,7 +75,12 @@ const ZiiPostFeed = () => {
           key={post.id}
           className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-5 transition hover:shadow-md"
         >
-          <h3 className="text-xl font-semibold text-gray-900">{post.title}</h3>
+          <Link
+            to={`/post/${post.id}`}
+            className="text-xl font-semibold text-blue-600 hover:underline block"
+          >
+            {post.title}
+          </Link>
 
           <p className="text-sm text-gray-500">
             Posted by <span className="font-medium">{post.author || 'Unknown'}</span> on{' '}
@@ -108,7 +109,6 @@ const ZiiPostFeed = () => {
             </span>
           </div>
 
-          {/* 💬 Comments + AI Replies */}
           <ZiiCommentSection postId={post.id} />
         </div>
       ))}
