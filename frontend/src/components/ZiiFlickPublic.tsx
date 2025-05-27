@@ -81,4 +81,7 @@ function ZiiFlickPublic() {
   );
 }
 
-export default ZiiFlickPublic;
+export default function ZiiFlickPublic() {
+  return <div>ZiiFlick Public Viewer</div>;
+}
+

@@ -77,4 +77,7 @@ function ZiiPostForm() {
   );
 }
 
-export default ZiiPostForm;
+export default function ZiiPostForm() {
+  return <div>Create a Post</div>;
+}
+

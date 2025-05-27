@@ -88,4 +88,7 @@ function ZiiPostFeed() {
   );
 }
 
-export default ZiiPostFeed;
+export default function ZiiPostFeed() {
+  return <div>ZiiPost Feed</div>;
+}
+

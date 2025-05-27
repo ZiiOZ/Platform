@@ -159,4 +159,7 @@ function ZiiFlickUpload() {
   );
 }
 
-export default ZiiFlickUpload;
+export default function ZiiFlickUpload() {
+  return <div>ZiiFlick Upload Page</div>;
+}
+
