@@ -160,6 +160,11 @@ function ZiiFlickUpload() {
 }
 
 export default function ZiiFlickUpload() {
-  return <div>ZiiFlick Upload Page</div>;
+  return (
+    <div className="p-4 text-center text-lg font-bold text-blue-600">
+      ZiiFlick Upload Page
+    </div>
+  );
 }
+
 
