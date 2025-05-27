@@ -13,22 +13,18 @@ const ZiiPostForm = () => {
   const handleImageUpload = async () => {
     if (!imageFile) return null;
 
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
+    const ext = imageFile.name.split('.').pop();
+    const fileName = `${Date.now()}.${ext}`;
     const { data, error } = await supabase.storage
-      .from('post-images') // Make sure this bucket exists in Supabase
+      .from('post-images')
       .upload(fileName, imageFile);
 
     if (error) {
-      console.error('Image upload error:', error.message);
+      console.error('Image upload failed:', error.message);
       return null;
     }
 
-    const url = supabase.storage
-      .from('post-images')
-      .getPublicUrl(data.path).data.publicUrl;
-
-    return url;
+    return supabase.storage.from('post-images').getPublicUrl(data.path).data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,16 +32,14 @@ const ZiiPostForm = () => {
     setLoading(true);
 
     let imageUrl = null;
-    if (imageFile) {
-      imageUrl = await handleImageUpload();
-    }
+    if (imageFile) imageUrl = await handleImageUpload();
 
-    const { data, error } = await supabase.from('posts').insert([
+    const { error } = await supabase.from('posts').insert([
       {
         title,
         content,
         image_url: imageUrl,
-        author: 'Anonymous', // Replace with Supabase Auth user later
+        author: 'Anonymous',
         created_at: new Date().toISOString(),
       },
     ]);
@@ -53,24 +47,26 @@ const ZiiPostForm = () => {
     setLoading(false);
 
     if (error) {
-      alert('Error submitting post');
+      alert('Failed to post.');
       console.error(error);
     } else {
-      alert('Post submitted!');
       navigate('/ziiposts');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-4 space-y-4">
-      <h2 className="text-2xl font-semibold">Create a Post</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow space-y-4 mt-6"
+    >
+      <h2 className="text-2xl font-bold text-gray-800">Create a Post</h2>
 
       <input
         type="text"
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full p-2 border rounded"
+        className="w-full p-3 border rounded-lg text-sm"
         required
       />
 
@@ -78,7 +74,7 @@ const ZiiPostForm = () => {
         placeholder="Write your post here..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="w-full p-2 border rounded h-32"
+        className="w-full p-3 border rounded-lg h-32 text-sm"
         required
       />
 
@@ -86,15 +82,15 @@ const ZiiPostForm = () => {
         type="file"
         accept="image/*"
         onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-        className="w-full"
+        className="text-sm"
       />
 
       <button
         type="submit"
         disabled={loading}
-        className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium"
       >
-        {loading ? 'Submitting...' : 'Post'}
+        {loading ? 'Posting...' : 'Post'}
       </button>
     </form>
   );
