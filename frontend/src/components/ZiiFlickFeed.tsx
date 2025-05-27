@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
+<div className="bg-black rounded-2xl shadow-lg overflow-hidden mb-4 max-w-md w-full">
+  <video
+    src={video.url}
+    controls
+    className="w-full h-auto max-h-[500px] object-contain"
+  />
+</div>
+
 interface Flick {
   id: string;
   title: string;

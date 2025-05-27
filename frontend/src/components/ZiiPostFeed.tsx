@@ -1,165 +1,91 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import ZiiCommentSection from './ZiiCommentSection';
-import { Link } from 'react-router-dom';
 
 interface Post {
-  id: number;
-  title: string;
-  content: string;
-  image_url: string | null;
+  id: string;
+  username: string;
   created_at: string;
-  author: string;
-  boosts: number;
-  visible: boolean;
+  content: string;
+  image_url?: string;
+  boosts?: number;
 }
 
-const ZiiPostFeed = () => {
+export default function ZiiPostFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const admin = localStorage.getItem('ziioz_admin') === 'true';
-    setIsAdmin(admin);
+    fetchPosts();
   }, []);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching posts:', error.message);
-      } else {
-        setPosts((data || []).filter((p) => p.visible || isAdmin));
-      }
-
-      setLoading(false);
-    };
-
-    fetchPosts();
-  }, [isAdmin]);
-
-  const handleBoost = async (postId: number) => {
-    const key = `boosted_${postId}`;
-    if (localStorage.getItem(key)) {
-      alert('You already boosted this post.');
-      return;
-    }
-
-    const post = posts.find((p) => p.id === postId);
-    if (!post) return;
-
-    const { error } = await supabase
+  const fetchPosts = async () => {
+    const { data, error } = await supabase
       .from('posts')
-      .update({ boosts: (post.boosts || 0) + 1 })
-      .eq('id', postId);
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    if (!error) {
-      localStorage.setItem(key, 'true');
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
-        )
-      );
+    if (error) {
+      console.error('Error fetching posts:', error);
     } else {
-      alert('Boost failed.');
-      console.error(error);
+      setPosts(data as Post[]);
     }
   };
-
-  const handleDelete = async (postId: number) => {
-    const confirm = window.confirm('Delete this post permanently?');
-    if (!confirm) return;
-
-    const { error } = await supabase.from('posts').delete().eq('id', postId);
-    if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
-  };
-
-  const handleToggleVisibility = async (postId: number, visible: boolean) => {
-    const { error } = await supabase
-      .from('posts')
-      .update({ visible: !visible })
-      .eq('id', postId);
-
-    if (!error) {
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId ? { ...p, visible: !visible } : p
-        )
-      );
-    }
-  };
-
-  if (loading) return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
-  if (posts.length === 0) return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 py-8 px-4">
       {posts.map((post) => (
         <div
           key={post.id}
-          className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-5 transition hover:shadow-md"
+          className="bg-white rounded-2xl shadow-md p-4 mb-6 max-w-2xl w-full"
         >
-          <Link
-            to={`/post/${post.id}`}
-            className="text-xl font-semibold text-blue-600 hover:underline block"
-          >
-            {post.title}
-          </Link>
+          <div className="mb-2">
+            <h2 className="font-bold text-lg text-blue-800">{post.username || 'Anonymous'}</h2>
+            <p className="text-sm text-gray-400">
+              {new Date(post.created_at).toLocaleString()}
+            </p>
+          </div>
 
-          <p className="text-sm text-gray-500">
-            Posted by <span className="font-medium">{post.author || 'Unknown'}</span> on{' '}
-            {new Date(post.created_at).toLocaleString()}
-          </p>
-
-          <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
+          <p className="text-gray-800 whitespace-pre-line mb-4">{post.content}</p>
 
           {post.image_url && (
             <img
               src={post.image_url}
-              alt="Post visual"
-              className="w-full rounded-lg mt-3 border"
+              alt="post"
+              className="rounded-lg w-full max-h-[400px] object-cover mb-4"
             />
           )}
 
-          <div className="flex items-center justify-between mt-4">
-            <button
-              onClick={() => handleBoost(post.id)}
-              className="text-white bg-orange-500 hover:bg-orange-600 px-4 py-1.5 rounded-full text-sm"
-            >
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">
               🔥 Boost
             </button>
-            <span className="text-sm text-gray-600">
-              {post.boosts || 0} Boost{(post.boosts || 0) === 1 ? '' : 's'}
-            </span>
+            <span className="text-sm text-gray-600">{post.boosts || 0} Boosts</span>
+            <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-sm">
+              🔒 Hide
+            </button>
+            <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+              🗑 Delete
+            </button>
           </div>
 
-          {isAdmin && (
-            <div className="flex gap-3 text-sm text-gray-600 mt-2">
-              <button
-                onClick={() => handleToggleVisibility(post.id, post.visible)}
-                className="bg-yellow-100 hover:bg-yellow-200 px-3 py-1 rounded"
-              >
-                {post.visible ? '🔒 Hide' : '✅ Show'}
+          <div className="border-t pt-4">
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              Comments
+            </label>
+            <textarea
+              placeholder="Write a comment..."
+              className="w-full border border-gray-300 rounded-lg p-2 mb-2 resize-none text-sm"
+            />
+            <div className="flex items-center gap-3">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-full text-sm">
+                Post Comment
               </button>
-              <button
-                onClick={() => handleDelete(post.id)}
-                className="bg-red-100 hover:bg-red-200 px-3 py-1 rounded"
-              >
-                🗑 Delete
+              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-full text-sm">
+                🤖 Reply with ZiiBot
               </button>
             </div>
-          )}
-
-          <ZiiCommentSection postId={post.id} />
+          </div>
         </div>
       ))}
     </div>
   );
-};
-
-export default ZiiPostFeed;
+}
