@@ -1,6 +1,7 @@
 // src/components/ZiiPostFeed.tsx
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import ZiiCommentSection from './ZiiCommentSection';
 
 interface Post {
   id: number;
@@ -63,15 +64,20 @@ const ZiiPostFeed = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
-  if (posts.length === 0) return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
+  if (loading) {
+    return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
+  }
+
+  if (posts.length === 0) {
+    return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       {posts.map((post) => (
         <div
           key={post.id}
-          className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-3 transition hover:shadow-md"
+          className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-5 transition hover:shadow-md"
         >
           <h3 className="text-xl font-semibold text-gray-900">{post.title}</h3>
 
@@ -101,6 +107,9 @@ const ZiiPostFeed = () => {
               {post.boosts || 0} Boost{(post.boosts || 0) === 1 ? '' : 's'}
             </span>
           </div>
+
+          {/* 💬 Comments + AI Replies */}
+          <ZiiCommentSection postId={post.id} />
         </div>
       ))}
     </div>
