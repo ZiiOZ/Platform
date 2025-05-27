@@ -3,6 +3,9 @@ import ZiiFlickUpload from './components/ZiiFlickUpload';
 import ZiiFlickPublic from './components/ZiiFlickPublic';
 import ZiiPostFeed from './components/ZiiPostFeed';
 import ZiiPostForm from './components/ZiiPostForm';
+import NotFound from './components/NotFound'; // Create this component
+
+<Route path="*" element={<NotFound />} />
 
 function App() {
   return (
