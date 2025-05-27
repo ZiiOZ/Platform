@@ -9,6 +9,7 @@ interface Post {
   image_url: string | null;
   created_at: string;
   author: string;
+  boosts: number;
 }
 
 const ZiiPostFeed = () => {
@@ -34,13 +35,36 @@ const ZiiPostFeed = () => {
     fetchPosts();
   }, []);
 
-  if (loading) {
-    return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
-  }
+  const handleBoost = async (postId: number) => {
+    const key = `boosted_${postId}`;
+    if (localStorage.getItem(key)) {
+      alert('You already boosted this post.');
+      return;
+    }
 
-  if (posts.length === 0) {
-    return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
-  }
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    const { error } = await supabase
+      .from('posts')
+      .update({ boosts: (post.boosts || 0) + 1 })
+      .eq('id', postId);
+
+    if (!error) {
+      localStorage.setItem(key, 'true');
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
+        )
+      );
+    } else {
+      alert('Boost failed.');
+      console.error(error);
+    }
+  };
+
+  if (loading) return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
+  if (posts.length === 0) return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -65,6 +89,18 @@ const ZiiPostFeed = () => {
               className="w-full rounded-lg mt-3 border"
             />
           )}
+
+          <div className="flex items-center justify-between mt-4">
+            <button
+              onClick={() => handleBoost(post.id)}
+              className="text-white bg-orange-500 hover:bg-orange-600 px-4 py-1.5 rounded-full text-sm"
+            >
+              🔥 Boost
+            </button>
+            <span className="text-sm text-gray-600">
+              {post.boosts || 0} Boost{(post.boosts || 0) === 1 ? '' : 's'}
+            </span>
+          </div>
         </div>
       ))}
     </div>
