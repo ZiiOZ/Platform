@@ -35,28 +35,34 @@ const ZiiPostFeed = () => {
   }, []);
 
   if (loading) {
-    return <p className="text-center mt-8">Loading posts...</p>;
+    return <p className="text-center mt-10 text-gray-500">Loading posts...</p>;
   }
 
   if (posts.length === 0) {
-    return <p className="text-center mt-8">No posts yet.</p>;
+    return <p className="text-center mt-10 text-gray-600">No posts yet.</p>;
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       {posts.map((post) => (
-        <div key={post.id} className="border p-4 rounded shadow">
-          <h3 className="text-xl font-bold">{post.title}</h3>
-          <p className="text-sm text-gray-600 mb-2">
-            Posted by {post.author || 'Unknown'} on{' '}
+        <div
+          key={post.id}
+          className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-3 transition hover:shadow-md"
+        >
+          <h3 className="text-xl font-semibold text-gray-900">{post.title}</h3>
+
+          <p className="text-sm text-gray-500">
+            Posted by <span className="font-medium">{post.author || 'Unknown'}</span> on{' '}
             {new Date(post.created_at).toLocaleString()}
           </p>
-          <p className="mb-2">{post.content}</p>
+
+          <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
+
           {post.image_url && (
             <img
               src={post.image_url}
               alt="Post visual"
-              className="w-full rounded mt-2"
+              className="w-full rounded-lg mt-3 border"
             />
           )}
         </div>
