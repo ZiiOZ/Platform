@@ -1,4 +1,3 @@
-// src/components/ZiiPostFeed.tsx
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import ZiiCommentSection from './ZiiCommentSection';
@@ -12,11 +11,18 @@ interface Post {
   created_at: string;
   author: string;
   boosts: number;
+  visible: boolean;
 }
 
 const ZiiPostFeed = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const admin = localStorage.getItem('ziioz_admin') === 'true';
+    setIsAdmin(admin);
+  }, []);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -28,14 +34,14 @@ const ZiiPostFeed = () => {
       if (error) {
         console.error('Error fetching posts:', error.message);
       } else {
-        setPosts(data || []);
+        setPosts((data || []).filter((p) => p.visible || isAdmin));
       }
 
       setLoading(false);
     };
 
     fetchPosts();
-  }, []);
+  }, [isAdmin]);
 
   const handleBoost = async (postId: number) => {
     const key = `boosted_${postId}`;
@@ -62,6 +68,29 @@ const ZiiPostFeed = () => {
     } else {
       alert('Boost failed.');
       console.error(error);
+    }
+  };
+
+  const handleDelete = async (postId: number) => {
+    const confirm = window.confirm('Delete this post permanently?');
+    if (!confirm) return;
+
+    const { error } = await supabase.from('posts').delete().eq('id', postId);
+    if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
+  const handleToggleVisibility = async (postId: number, visible: boolean) => {
+    const { error } = await supabase
+      .from('posts')
+      .update({ visible: !visible })
+      .eq('id', postId);
+
+    if (!error) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, visible: !visible } : p
+        )
+      );
     }
   };
 
@@ -108,6 +137,23 @@ const ZiiPostFeed = () => {
               {post.boosts || 0} Boost{(post.boosts || 0) === 1 ? '' : 's'}
             </span>
           </div>
+
+          {isAdmin && (
+            <div className="flex gap-3 text-sm text-gray-600 mt-2">
+              <button
+                onClick={() => handleToggleVisibility(post.id, post.visible)}
+                className="bg-yellow-100 hover:bg-yellow-200 px-3 py-1 rounded"
+              >
+                {post.visible ? '🔒 Hide' : '✅ Show'}
+              </button>
+              <button
+                onClick={() => handleDelete(post.id)}
+                className="bg-red-100 hover:bg-red-200 px-3 py-1 rounded"
+              >
+                🗑 Delete
+              </button>
+            </div>
+          )}
 
           <ZiiCommentSection postId={post.id} />
         </div>
