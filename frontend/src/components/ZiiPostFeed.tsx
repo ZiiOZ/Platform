@@ -68,13 +68,15 @@ export default function ZiiPostFeed() {
           </div>
 
           <div className="border-t pt-4">
-            <label className="block text-sm font-medium text-gray-600 mb-1">
+            <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">
               Comments
             </label>
             <textarea
+              id={`comment-${post.id}`}
               placeholder="Write a comment..."
-              className="w-full border border-gray-300 rounded-lg p-2 mb-2 resize-none text-sm"
-            />
+              className="w-full border border-gray-300 rounded-lg p-2 mt-1 mb-3 resize-none text-sm"
+            ></textarea>
+
             <div className="flex items-center gap-3">
               <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-full text-sm">
                 Post Comment
