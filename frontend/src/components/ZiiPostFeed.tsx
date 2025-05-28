@@ -33,9 +33,7 @@ export default function ZiiPostFeed() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching posts:', error);
-    } else {
+    if (!error && data) {
       setPosts(data as Post[]);
       (data as Post[]).forEach((post) => fetchComments(post.id));
     }
@@ -75,6 +73,27 @@ export default function ZiiPostFeed() {
     }
   };
 
+  const handleBoost = async (postId: number) => {
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    const { error } = await supabase
+      .from('posts')
+      .update({ boosts: (post.boosts || 0) + 1 })
+      .eq('id', postId);
+
+    if (!error) {
+      // Update local state
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
+        )
+      );
+    } else {
+      console.error('Boost error:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 py-8 px-4">
       {posts.map((post) => (
@@ -98,7 +117,12 @@ export default function ZiiPostFeed() {
           )}
 
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">🔥 Boost</button>
+            <button
+              onClick={() => handleBoost(post.id)}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm"
+            >
+              🔥 Boost
+            </button>
             <span className="text-sm text-gray-600">{post.boosts || 0} Boosts</span>
             <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-sm">🔒 Hide</button>
             <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm">🗑 Delete</button>
