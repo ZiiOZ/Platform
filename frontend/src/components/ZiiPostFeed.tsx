@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 interface Post {
-  id: string;
+  id: number;
   username: string;
   created_at: string;
   content: string;
@@ -10,8 +10,18 @@ interface Post {
   boosts?: number;
 }
 
+interface Comment {
+  id: number;
+  post_id: number;
+  username: string;
+  content: string;
+  created_at: string;
+}
+
 export default function ZiiPostFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [comments, setComments] = useState<Record<number, Comment[]>>({});
+  const [newComments, setNewComments] = useState<Record<number, string>>({});
 
   useEffect(() => {
     fetchPosts();
@@ -27,6 +37,41 @@ export default function ZiiPostFeed() {
       console.error('Error fetching posts:', error);
     } else {
       setPosts(data as Post[]);
+      (data as Post[]).forEach((post) => fetchComments(post.id));
+    }
+  };
+
+  const fetchComments = async (postId: number) => {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+
+    if (!error && data) {
+      setComments((prev) => ({ ...prev, [postId]: data as Comment[] }));
+    }
+  };
+
+  const handleCommentChange = (postId: number, text: string) => {
+    setNewComments((prev) => ({ ...prev, [postId]: text }));
+  };
+
+  const handlePostComment = async (postId: number) => {
+    const content = newComments[postId]?.trim();
+    if (!content) return;
+
+    const { error } = await supabase.from('comments').insert({
+      post_id: postId,
+      username: 'Anonymous', // Optional: replace with user session
+      content,
+    });
+
+    if (!error) {
+      setNewComments((prev) => ({ ...prev, [postId]: '' }));
+      fetchComments(postId);
+    } else {
+      console.error('Error posting comment:', error);
     }
   };
 
@@ -39,9 +84,7 @@ export default function ZiiPostFeed() {
         >
           <div className="mb-2">
             <h2 className="font-bold text-lg text-blue-800">{post.username || 'Anonymous'}</h2>
-            <p className="text-sm text-gray-400">
-              {new Date(post.created_at).toLocaleString()}
-            </p>
+            <p className="text-sm text-gray-400">{new Date(post.created_at).toLocaleString()}</p>
           </div>
 
           <p className="text-gray-800 whitespace-pre-line mb-4">{post.content}</p>
@@ -55,36 +98,44 @@ export default function ZiiPostFeed() {
           )}
 
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">
-              🔥 Boost
-            </button>
+            <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm">🔥 Boost</button>
             <span className="text-sm text-gray-600">{post.boosts || 0} Boosts</span>
-            <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-sm">
-              🔒 Hide
-            </button>
-            <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm">
-              🗑 Delete
-            </button>
+            <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-sm">🔒 Hide</button>
+            <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm">🗑 Delete</button>
           </div>
 
           <div className="border-t pt-4">
-            <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">
-              Comments
-            </label>
+            <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">Comments</label>
+
             <textarea
               id={`comment-${post.id}`}
+              value={newComments[post.id] || ''}
+              onChange={(e) => handleCommentChange(post.id, e.target.value)}
               placeholder="Write a comment..."
               className="w-full border border-gray-300 rounded-lg p-2 mt-1 mb-3 resize-none text-sm"
-            ></textarea>
+            />
 
             <div className="flex items-center gap-3">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-full text-sm">
+              <button
+                onClick={() => handlePostComment(post.id)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-full text-sm"
+              >
                 Post Comment
               </button>
               <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-full text-sm">
                 🤖 Reply with ZiiBot
               </button>
             </div>
+
+            {comments[post.id]?.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {comments[post.id].map((c) => (
+                  <div key={c.id} className="text-sm text-gray-800 border rounded p-2">
+                    <span className="font-semibold">{c.username || 'Anonymous'}:</span> {c.content}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ))}
