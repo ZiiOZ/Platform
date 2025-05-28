@@ -17,3 +17,6 @@ const openai = new OpenAI({
 });
 
 // ... any other config
+app.listen(process.env.PORT || 3001, () => {
+  console.log(`ZiiOZ backend running on port ${process.env.PORT || 3001}`);
+});
