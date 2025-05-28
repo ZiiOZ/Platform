@@ -1,53 +1,38 @@
 import express from 'express';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import { supabase } from '../supabaseClient';
 
 const router = express.Router();
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
 });
-const openai = new OpenAIApi(configuration);
 
-// POST /api/ziibot-reply
 router.post('/ziibot-reply', async (req, res) => {
-  const { postId, context } = req.body;
-
-  if (!postId || !context) {
-    return res.status(400).json({ error: 'Missing postId or context' });
-  }
+  const { comment, post_id } = req.body;
 
   try {
-    const prompt = `Reply in a natural, witty tone to this comment:\n"${context}"`;
-
-    const completion = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 60,
+      messages: [{ role: 'user', content: comment }],
     });
 
-    const replyText = completion.data.choices[0].message?.content?.trim();
+    const botReply = response.choices[0].message.content;
 
-    if (!replyText) {
-      return res.status(500).json({ error: 'No reply generated' });
-    }
-
-    // Save reply into Supabase comments table
     const { error } = await supabase.from('comments').insert({
-      post_id: postId,
-      username: 'ZiiBot 🤖',
-      content: replyText,
+      post_id,
+      username: 'ZiiBot',
+      content: botReply,
     });
 
     if (error) {
-      console.error('Supabase insert error:', error);
-      return res.status(500).json({ error: 'Failed to save comment' });
+      return res.status(500).json({ error: 'Failed to save reply' });
     }
 
-    res.status(200).json({ message: 'ZiiBot replied', content: replyText });
+    res.json({ reply: botReply });
   } catch (err) {
-    console.error('OpenAI error:', err);
-    res.status(500).json({ error: 'ZiiBot failed to reply' });
+    console.error('ZiiBot error:', err);
+    res.status(500).json({ error: 'OpenAI failed to reply' });
   }
 });
 

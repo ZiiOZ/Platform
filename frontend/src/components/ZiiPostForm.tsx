@@ -1,6 +1,6 @@
 // src/components/ZiiPostForm.tsx
 import { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../backend/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
 const ZiiPostForm = () => {

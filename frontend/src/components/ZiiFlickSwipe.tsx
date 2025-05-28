@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../backend/supabaseClient';
 
 interface ZiiFlick {
   id: string;
