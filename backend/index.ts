@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import OpenAI from 'openai';
+import ziibotReply from './api/ziibot-reply';
+app.use('/api', ziibotReply);
+
 
 const app = express();
 app.use(cors());

@@ -83,7 +83,6 @@ export default function ZiiPostFeed() {
       .eq('id', postId);
 
     if (!error) {
-      // Update local state
       setPosts((prev) =>
         prev.map((p) =>
           p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
@@ -91,6 +90,35 @@ export default function ZiiPostFeed() {
       );
     } else {
       console.error('Boost error:', error);
+    }
+  };
+
+  const handleZiiBotReply = async (postId: number) => {
+    const context = comments[postId]?.[comments[postId].length - 1]?.content;
+
+    if (!context) {
+      alert('No comment found to reply to.');
+      return;
+    }
+
+    try {
+      const res = await fetch('https://ziioz-backend-platform.onrender.com/api/ziibot-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, context }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        fetchComments(postId);
+      } else {
+        console.error(data.error);
+        alert('ZiiBot failed to reply.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('ZiiBot request failed.');
     }
   };
 
@@ -146,7 +174,10 @@ export default function ZiiPostFeed() {
               >
                 Post Comment
               </button>
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-full text-sm">
+              <button
+                onClick={() => handleZiiBotReply(post.id)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-full text-sm"
+              >
                 🤖 Reply with ZiiBot
               </button>
             </div>
