@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../supabaseClient'; // ✅ Frontend-safe import
+import { supabase } from '../supabaseClient';
 
 interface Post {
   id: number;
@@ -74,6 +74,8 @@ export default function ZiiPostFeed() {
   };
 
   const handleBoost = async (postId: number) => {
+    if (localStorage.getItem(`boosted_post_${postId}`) === 'true') return;
+
     const post = posts.find((p) => p.id === postId);
     if (!post) return;
 
@@ -83,6 +85,7 @@ export default function ZiiPostFeed() {
       .eq('id', postId);
 
     if (!error) {
+      localStorage.setItem(`boosted_post_${postId}`, 'true');
       setPosts((prev) =>
         prev.map((p) =>
           p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
@@ -124,84 +127,91 @@ export default function ZiiPostFeed() {
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100 py-8 px-4">
-      {posts.map((post) => (
-        <div
-          key={post.id}
-          className="bg-white rounded-2xl shadow p-6 mb-6 max-w-xl w-full"
-        >
-          <div className="mb-2">
-            <h2 className="font-bold text-lg text-blue-700">
-              {post.username || 'Anonymous'}
-            </h2>
-            <p className="text-sm text-gray-500">
-              {new Date(post.created_at).toLocaleString()}
-            </p>
-          </div>
+      {posts.map((post) => {
+        const boosted = localStorage.getItem(`boosted_post_${post.id}`) === 'true';
 
-          <p className="text-gray-800 whitespace-pre-line mb-4">{post.content}</p>
-
-          {post.image_url && (
-            <img
-              src={post.image_url}
-              alt="Post"
-              className="rounded-lg w-full max-h-[400px] object-cover mb-4"
-            />
-          )}
-
-          <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <button
-              onClick={() => handleBoost(post.id)}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm"
-            >
-              🔥 Boost
-            </button>
-            <span className="text-sm text-gray-700">{post.boosts || 0} Boosts</span>
-          </div>
-
-          <div className="border-t pt-4">
-            <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">
-              Comments
-            </label>
-
-            <textarea
-              id={`comment-${post.id}`}
-              value={newComments[post.id] || ''}
-              onChange={(e) => handleCommentChange(post.id, e.target.value)}
-              placeholder="Write a comment..."
-              className="w-full border border-gray-300 rounded-lg p-2 mt-1 mb-3 resize-none text-sm"
-            />
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => handlePostComment(post.id)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-full text-sm"
-              >
-                Post Comment
-              </button>
-              <button
-                onClick={() => handleZiiBotReply(post.id)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-full text-sm"
-              >
-                🤖 Reply with ZiiBot
-              </button>
+        return (
+          <div
+            key={post.id}
+            className="bg-white rounded-2xl shadow p-6 mb-6 max-w-xl w-full"
+          >
+            <div className="mb-2">
+              <h2 className="font-bold text-lg text-blue-700">
+                {post.username || 'Anonymous'}
+              </h2>
+              <p className="text-sm text-gray-500">
+                {new Date(post.created_at).toLocaleString()}
+              </p>
             </div>
 
-            {comments[post.id]?.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {comments[post.id].map((c) => (
-                  <div
-                    key={c.id}
-                    className="text-sm text-gray-800 border rounded px-3 py-2 bg-gray-50"
-                  >
-                    <span className="font-semibold">{c.username || 'Anonymous'}:</span>{' '}
-                    {c.content}
-                  </div>
-                ))}
-              </div>
+            <p className="text-gray-800 whitespace-pre-line mb-4">{post.content}</p>
+
+            {post.image_url && (
+              <img
+                src={post.image_url}
+                alt="Post"
+                className="rounded-lg w-full max-h-[400px] object-cover mb-4"
+              />
             )}
+
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <button
+                onClick={() => handleBoost(post.id)}
+                disabled={boosted}
+                className={`${
+                  boosted ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'
+                } text-white px-4 py-1 rounded-full text-sm`}
+              >
+                🔥 Boost
+              </button>
+              <span className="text-sm text-gray-700">{post.boosts || 0} Boosts</span>
+            </div>
+
+            <div className="border-t pt-4">
+              <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">
+                Comments
+              </label>
+
+              <textarea
+                id={`comment-${post.id}`}
+                value={newComments[post.id] || ''}
+                onChange={(e) => handleCommentChange(post.id, e.target.value)}
+                placeholder="Write a comment..."
+                className="w-full border border-gray-300 rounded-lg p-2 mt-1 mb-3 resize-none text-sm"
+              />
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handlePostComment(post.id)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-full text-sm"
+                >
+                  Post Comment
+                </button>
+                <button
+                  onClick={() => handleZiiBotReply(post.id)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded-full text-sm"
+                >
+                  🤖 Reply with ZiiBot
+                </button>
+              </div>
+
+              {comments[post.id]?.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {comments[post.id].map((c) => (
+                    <div
+                      key={c.id}
+                      className="text-sm text-gray-800 border rounded px-3 py-2 bg-gray-50"
+                    >
+                      <span className="font-semibold">{c.username || 'Anonymous'}:</span>{' '}
+                      {c.content}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
