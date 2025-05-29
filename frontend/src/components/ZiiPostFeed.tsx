@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
+import { supabase } from '../supabaseClient'; // ✅ Frontend-safe import
 
 interface Post {
   id: number;
@@ -88,39 +88,54 @@ export default function ZiiPostFeed() {
           p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
         )
       );
+    } else {
+      console.error('Boost error:', error);
     }
   };
 
   const handleZiiBotReply = async (postId: number) => {
     const context = comments[postId]?.[comments[postId].length - 1]?.content;
-    if (!context) return alert('No comment found to reply to.');
+
+    if (!context) {
+      alert('No comment found to reply to.');
+      return;
+    }
 
     try {
       const res = await fetch('https://ziioz-backend-platform.onrender.com/api/ziibot-reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, context }),
+        body: JSON.stringify({ comment: context, post_id: postId }),
       });
 
       const data = await res.json();
-      if (res.ok) fetchComments(postId);
-      else alert('ZiiBot failed to reply.');
+
+      if (res.ok) {
+        fetchComments(postId);
+      } else {
+        console.error('ZiiBot backend error:', data.error);
+        alert('ZiiBot failed to reply.');
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Fetch error:', err);
       alert('ZiiBot request failed.');
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 py-8 px-4">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100 py-8 px-4">
       {posts.map((post) => (
         <div
           key={post.id}
-          className="bg-white rounded-2xl shadow-md p-4 mb-6 max-w-2xl w-full"
+          className="bg-white rounded-2xl shadow p-6 mb-6 max-w-xl w-full"
         >
           <div className="mb-2">
-            <h2 className="font-bold text-lg text-blue-800">{post.username || 'Anonymous'}</h2>
-            <p className="text-sm text-gray-400">{new Date(post.created_at).toLocaleString()}</p>
+            <h2 className="font-bold text-lg text-blue-700">
+              {post.username || 'Anonymous'}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {new Date(post.created_at).toLocaleString()}
+            </p>
           </div>
 
           <p className="text-gray-800 whitespace-pre-line mb-4">{post.content}</p>
@@ -128,7 +143,7 @@ export default function ZiiPostFeed() {
           {post.image_url && (
             <img
               src={post.image_url}
-              alt="post"
+              alt="Post"
               className="rounded-lg w-full max-h-[400px] object-cover mb-4"
             />
           )}
@@ -140,11 +155,16 @@ export default function ZiiPostFeed() {
             >
               🔥 Boost
             </button>
-            <span className="text-sm text-gray-600">{post.boosts || 0} Boosts</span>
+            <span className="text-sm text-gray-700">{post.boosts || 0} Boosts</span>
           </div>
 
           <div className="border-t pt-4">
+            <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">
+              Comments
+            </label>
+
             <textarea
+              id={`comment-${post.id}`}
               value={newComments[post.id] || ''}
               onChange={(e) => handleCommentChange(post.id, e.target.value)}
               placeholder="Write a comment..."
@@ -169,8 +189,12 @@ export default function ZiiPostFeed() {
             {comments[post.id]?.length > 0 && (
               <div className="mt-4 space-y-2">
                 {comments[post.id].map((c) => (
-                  <div key={c.id} className="text-sm text-gray-800 border rounded p-2">
-                    <span className="font-semibold">{c.username || 'Anonymous'}:</span> {c.content}
+                  <div
+                    key={c.id}
+                    className="text-sm text-gray-800 border rounded px-3 py-2 bg-gray-50"
+                  >
+                    <span className="font-semibold">{c.username || 'Anonymous'}:</span>{' '}
+                    {c.content}
                   </div>
                 ))}
               </div>

@@ -1,6 +1,6 @@
 import express from 'express';
 import OpenAI from 'openai';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabaseServerClient';
 
 const router = express.Router();
 
@@ -17,15 +17,20 @@ router.post('/ziibot-reply', async (req, res) => {
       messages: [{ role: 'user', content: comment }],
     });
 
-    const botReply = response.choices[0].message.content;
+    const botReply = response.choices?.[0]?.message?.content;
+
+    if (!botReply) {
+      return res.status(500).json({ error: 'No response from ZiiBot' });
+    }
 
     const { error } = await supabase.from('comments').insert({
       post_id,
-      username: 'ZiiBot',
+      username: 'ZiiBot 🤖',
       content: botReply,
     });
 
     if (error) {
+      console.error('Supabase insert error:', error);
       return res.status(500).json({ error: 'Failed to save reply' });
     }
 
