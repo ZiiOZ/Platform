@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import ziibotRouter from './api/ziibot-reply'; // ✅ import the router
+import ziibotReplyRoute from './api/ziibot-reply';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -8,13 +8,14 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Prefix the route correctly
-app.use('/api', ziibotRouter);
+// ✅ Mount the router here
+app.use('/api', ziibotReplyRoute);
 
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('ZiiOZ Backend is Live');
 });
 
 app.listen(PORT, () => {
+  console.log('[ZiiBot] OpenAI Key Loaded:', Boolean(process.env.OPENAI_API_KEY));
   console.log(`ZiiOZ backend running on port ${PORT}`);
 });

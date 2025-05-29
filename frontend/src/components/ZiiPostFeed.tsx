@@ -26,6 +26,33 @@ export default function ZiiPostFeed() {
   useEffect(() => {
     fetchPosts();
   }, []);
+  useEffect(() => {
+  const postsChannel = supabase
+    .channel('realtime:posts')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+      const updated = payload.new;
+      setPosts((prev) =>
+        prev.map((p) => (p.id === updated.id ? { ...p, boosts: updated.boosts } : p))
+      );
+    })
+    .subscribe();
+
+  const commentsChannel = supabase
+    .channel('realtime:comments')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, (payload) => {
+      const newComment = payload.new;
+      setComments((prev) => ({
+        ...prev,
+        [newComment.post_id]: [...(prev[newComment.post_id] || []), newComment],
+      }));
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(postsChannel);
+    supabase.removeChannel(commentsChannel);
+  };
+}, []);
 
   const fetchPosts = async () => {
     const { data, error } = await supabase

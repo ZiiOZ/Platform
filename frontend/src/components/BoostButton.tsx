@@ -1,51 +1,54 @@
-import { useState } from 'react';
-import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
 
 interface BoostButtonProps {
-  commentId: number;
-  currentBoosts: number;
+  postId: number;
+  initialBoosts: number;
 }
 
-function BoostButton({ commentId, currentBoosts }: BoostButtonProps) {
-  const [boosts, setBoosts] = useState<number>(currentBoosts ?? 0);
-  const [boosting, setBoosting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function BoostButton({ postId, initialBoosts }: BoostButtonProps) {
+  const [boosted, setBoosted] = useState(false);
+  const [boosts, setBoosts] = useState(initialBoosts);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(`boosted_post_${postId}`);
+    setBoosted(stored === 'true');
+  }, [postId]);
 
   const handleBoost = async () => {
-    setBoosting(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('comments')
-        .update({ boosts: boosts + 1 })
-        .eq('id', commentId)
-        .select()
-        .single();
+    if (boosted) return;
 
-      if (error) throw error;
-      if (data) {
-        setBoosts(data.boosts);
-      }
-    } catch (err: any) {
-      setError("Failed to boost. Please try again.");
-      console.error(err.message);
-    } finally {
-      setBoosting(false);
+    const { data, error } = await supabase
+      .from('posts')
+      .update({ boosts: boosts + 1 })
+      .eq('id', postId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Boost failed:', error.message);
+      return;
     }
+
+    setBoosts((prev) => prev + 1);
+    setBoosted(true);
+    localStorage.setItem(`boosted_post_${postId}`, 'true');
   };
 
   return (
-    <div>
-      <button
-        onClick={handleBoost}
-        disabled={boosting}
-        className="text-sm bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 rounded"
-      >
-        {boosting ? "Boosting..." : `🔥 Boost (${boosts})`}
-      </button>
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-    </div>
+    <button
+      className={`px-3 py-1 text-white rounded-md ${
+        boosted ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'
+      }`}
+      onClick={handleBoost}
+      disabled={boosted}
+    >
+      🔥 Boost ({boosts})
+    </button>
   );
 }
-
-export default BoostButton;
