@@ -16,28 +16,30 @@ export default function ZiiPostForm() {
       if (image) {
         const fileExt = image.name.split('.').pop();
         const filePath = `${Date.now()}.${fileExt}`;
-        const { data, error: uploadError } = await supabase.storage
-          .from('post-images')
+
+        const { error: uploadError } = await supabase.storage
+          .from('posts') // ✅ uses existing bucket
           .upload(filePath, image);
 
         if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabase.storage
-          .from('post-images')
+          .from('posts')
           .getPublicUrl(filePath);
 
         image_url = publicUrlData?.publicUrl || '';
       }
 
-      // Call AI API to get hook + hashtags
+      // Call AI backend to enhance post
       const aiRes = await fetch('https://ziioz-backend-platform.onrender.com/api/ai-post-enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
       });
+
       const aiData = await aiRes.json();
 
-      // Insert post with AI-enhanced data
+      // Save post to Supabase
       const { error: insertError } = await supabase.from('posts').insert({
         username: 'Anonymous',
         content,
@@ -50,10 +52,10 @@ export default function ZiiPostForm() {
 
       setContent('');
       setImage(null);
-      alert('Post uploaded with AI boost!');
+      alert('✅ Post uploaded with AI enhancements!');
     } catch (err) {
       console.error(err);
-      alert('Failed to post. Try again.');
+      alert('❌ Failed to upload. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -72,13 +74,14 @@ export default function ZiiPostForm() {
         type="file"
         accept="image/*"
         onChange={(e) => setImage(e.target.files?.[0] || null)}
+        className="block w-full text-sm text-gray-600"
       />
       <button
         disabled={loading}
         onClick={handleSubmit}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
       >
-        {loading ? 'Posting...' : 'Post'}
+        {loading ? 'Posting...' : 'Post with AI Boost'}
       </button>
     </div>
   );
