@@ -17,18 +17,24 @@ export default function ZiiPostForm() {
         const fileExt = image.name.split('.').pop();
         const filePath = `${Date.now()}.${fileExt}`;
 
-        // ✅ Correct bucket: post-images
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('post-images')
-          .upload(filePath, image);
+          .upload(filePath, image, {
+            cacheControl: '3600',
+            upsert: false,
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('❌ Upload Error:', uploadError);
+          throw uploadError;
+        }
 
         const { data: publicUrlData } = supabase.storage
           .from('post-images')
           .getPublicUrl(filePath);
 
         image_url = publicUrlData?.publicUrl || '';
+        console.log('✅ Image URL:', image_url);
       }
 
       const aiRes = await fetch('https://ziioz-backend-platform.onrender.com/api/ai-post-enhance', {
@@ -47,13 +53,16 @@ export default function ZiiPostForm() {
         hashtags: (aiData.hashtags || []).join(', '),
       });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('❌ Insert Error:', insertError);
+        throw insertError;
+      }
 
       setContent('');
       setImage(null);
       alert('✅ Post uploaded with AI enhancements!');
     } catch (err) {
-      console.error('❌ Upload error:', err);
+      console.error('❌ Unexpected Error:', err);
       alert('❌ Failed to upload. Please try again.');
     } finally {
       setLoading(false);
