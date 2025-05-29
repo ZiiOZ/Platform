@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../../../backend/supabaseClient';
+import { supabase } from '../supabaseClient'; // ✅ frontend-safe import
 
 interface Post {
   id: number;
@@ -88,18 +88,12 @@ export default function ZiiPostFeed() {
           p.id === postId ? { ...p, boosts: (p.boosts || 0) + 1 } : p
         )
       );
-    } else {
-      console.error('Boost error:', error);
     }
   };
 
   const handleZiiBotReply = async (postId: number) => {
     const context = comments[postId]?.[comments[postId].length - 1]?.content;
-
-    if (!context) {
-      alert('No comment found to reply to.');
-      return;
-    }
+    if (!context) return alert('No comment found to reply to.');
 
     try {
       const res = await fetch('https://ziioz-backend-platform.onrender.com/api/ziibot-reply', {
@@ -109,13 +103,8 @@ export default function ZiiPostFeed() {
       });
 
       const data = await res.json();
-
-      if (res.ok) {
-        fetchComments(postId);
-      } else {
-        console.error(data.error);
-        alert('ZiiBot failed to reply.');
-      }
+      if (res.ok) fetchComments(postId);
+      else alert('ZiiBot failed to reply.');
     } catch (err) {
       console.error(err);
       alert('ZiiBot request failed.');
@@ -152,15 +141,10 @@ export default function ZiiPostFeed() {
               🔥 Boost
             </button>
             <span className="text-sm text-gray-600">{post.boosts || 0} Boosts</span>
-            <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-sm">🔒 Hide</button>
-            <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm">🗑 Delete</button>
           </div>
 
           <div className="border-t pt-4">
-            <label htmlFor={`comment-${post.id}`} className="block text-sm font-medium text-gray-600 mb-1">Comments</label>
-
             <textarea
-              id={`comment-${post.id}`}
               value={newComments[post.id] || ''}
               onChange={(e) => handleCommentChange(post.id, e.target.value)}
               placeholder="Write a comment..."
