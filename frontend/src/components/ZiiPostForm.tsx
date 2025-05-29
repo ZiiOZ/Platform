@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../supabaseClient'; // ✅ frontend-safe import
+import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
 import { useNavigate } from 'react-router-dom';
 
 const ZiiPostForm = () => {

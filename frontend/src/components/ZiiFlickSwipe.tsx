@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '../../../backend/supabaseClient';
+import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
 
 interface ZiiFlick {
   id: string;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../supabaseClient'; // ✅ frontend-safe import
+import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
 
 interface Post {
   id: number;

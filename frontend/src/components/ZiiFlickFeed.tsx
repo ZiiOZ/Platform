@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../backend/supabaseClient';
+import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
 
 <div className="bg-black rounded-2xl shadow-lg overflow-hidden mb-4 max-w-md w-full">
   <video

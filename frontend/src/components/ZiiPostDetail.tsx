@@ -1,7 +1,7 @@
 // src/components/ZiiPostDetail.tsx
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '../../../backend/supabaseClient';
+import { supabase } from '../supabaseClient'; // ✅ GOOD PATH for frontend
 import ZiiCommentSection from './ZiiCommentSection';
 
 const ZiiPostDetail = () => {
