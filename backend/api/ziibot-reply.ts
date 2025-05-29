@@ -1,6 +1,6 @@
 import express from 'express';
 import OpenAI from 'openai';
-import { supabase } from '../backend/supabaseServerClient';
+import { supabase } from '../supabaseServerClient'; // ✅ Corrected path
 
 const router = express.Router();
 
@@ -35,8 +35,8 @@ router.post('/ziibot-reply', async (req, res) => {
     }
 
     res.json({ reply: botReply });
-  } catch (err) {
-    console.error('ZiiBot error:', err);
+  } catch (err: any) {
+    console.error('ZiiBot error:', err?.response?.data || err.message || err);
     res.status(500).json({ error: 'OpenAI failed to reply' });
   }
 });
