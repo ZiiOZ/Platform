@@ -16,7 +16,7 @@ router.post('/ai-post-enhance', async (req, res) => {
         content: `
 Generate a catchy 1-line hook for the following content. 
 Then create 3-5 relevant hashtags without "#" prefix.
-Respond JSON format: { "hook": "...", "hashtags": ["...", "..."] }
+Respond in JSON format: { "hook": "...", "hashtags": ["...", "..."] }
 
 Content:
 ${content}
