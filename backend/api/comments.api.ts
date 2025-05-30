@@ -1,18 +1,14 @@
 import express from 'express';
-// BEFORE:
-import { supabase } from '../supabaseServerClient.ts';
-
-// AFTER:
 import { supabase } from '../supabase.server';
-
-
 
 const router = express.Router();
 
 router.get('/comments', async (req, res) => {
   const { postId } = req.query;
 
-  if (!postId) return res.status(400).json({ error: 'Missing postId' });
+  if (!postId) {
+    return res.status(400).json({ error: 'Missing postId' });
+  }
 
   const { data, error } = await supabase
     .from('comments')
