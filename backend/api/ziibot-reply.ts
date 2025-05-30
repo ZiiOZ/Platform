@@ -1,6 +1,6 @@
 import express from 'express';
 import OpenAI from 'openai';
-import { supabase } from '../supabaseServerClient';
+import { supabase } from '../backend/supabaseServerClient';
 
 const router = express.Router();
 
@@ -15,8 +15,6 @@ router.post('/ziibot-reply', async (req, res) => {
     return res.status(400).json({ error: 'Missing comment or post_id' });
   }
 
-  console.log('[ZiiBot] Incoming:', { comment, post_id });
-
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -26,8 +24,8 @@ router.post('/ziibot-reply', async (req, res) => {
     const botReply = response.choices?.[0]?.message?.content;
 
     if (!botReply) {
-      console.error('[ZiiBot] Empty AI reply');
-      return res.status(500).json({ error: 'No reply from AI' });
+      console.error('[ZiiBot] No content in reply');
+      return res.status(500).json({ error: 'No response from ZiiBot' });
     }
 
     const { error } = await supabase.from('comments').insert({
@@ -37,15 +35,14 @@ router.post('/ziibot-reply', async (req, res) => {
     });
 
     if (error) {
-      console.error('[ZiiBot] Supabase insert error:', error.message);
-      return res.status(500).json({ error: 'Failed to save ZiiBot reply' });
+      console.error('[ZiiBot] Supabase insert error:', error);
+      return res.status(500).json({ error: 'Failed to save reply' });
     }
 
-    console.log('[ZiiBot] Reply saved and returned');
     res.json({ reply: botReply });
   } catch (err: any) {
     console.error('[ZiiBot] OpenAI error:', JSON.stringify(err, null, 2));
-    res.status(500).json({ error: 'ZiiBot failed to respond' });
+    res.status(500).json({ error: 'OpenAI failed to reply' });
   }
 });
 
