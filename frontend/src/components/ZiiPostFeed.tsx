@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { formatDistanceToNow } from 'date-fns';
-import ZiiCommentFeed from '../comments/ZiiCommentFeed';
-
+import ZiiCommentFeed from './ZiiCommentFeed';
 
 type Post = {
   id: string;
