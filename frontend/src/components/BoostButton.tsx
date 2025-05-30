@@ -27,7 +27,7 @@ export function BoostButton({ postId, initialBoosts }: BoostButtonProps) {
       .from('posts')
       .update({ boosts: boosts + 1 })
       .eq('id', postId)
-      .select(); // ✅ .single() removed
+      .select(); // removed `.single()` to avoid error on multiple rows
 
     if (error || !data || data.length === 0) {
       console.error('Boost failed:', error?.message || 'No rows updated');

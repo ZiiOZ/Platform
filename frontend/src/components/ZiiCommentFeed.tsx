@@ -2,43 +2,51 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 type Comment = {
-  id: string;
-  post_id: string;
+  id: number;
+  post_id: number;
   content: string;
   created_at: string;
+  username?: string;
 };
 
 const ZiiCommentFeed = ({ postId }: { postId: string | number }) => {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [replies, setReplies] = useState<{ [commentId: string]: string }>({});
-  const [loadingReply, setLoadingReply] = useState<string | null>(null);
+  const [replies, setReplies] = useState<{ [commentId: number]: string }>({});
+  const [loadingReply, setLoadingReply] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchComments = async () => {
-      const res = await fetch(`/api/comments?postId=${postId}`);
-      const data = await res.json();
-      setComments(data || []);
+      try {
+        const res = await fetch(`/api/comments?postId=${postId}`);
+        const data = await res.json();
+        setComments(data || []);
+      } catch (err) {
+        console.error('Failed to load comments:', err);
+      }
     };
 
     fetchComments();
   }, [postId]);
 
-  const handleZiiBotReply = async (commentId: string, content: string) => {
+  const handleZiiBotReply = async (commentId: number, content: string) => {
     if (replies[commentId]) return;
 
     setLoadingReply(commentId);
 
-  const response = await axios.post('/api/ziibot-reply', {
-  comment: content,
-  post_id: postId, // ✅ required
-});
-
+    try {
+      const response = await axios.post('/api/ziibot-reply', {
+        comment: content,
+        post_id: postId,
+      });
 
       const reply = response.data?.reply || 'No response';
       setReplies((prev) => ({ ...prev, [commentId]: reply }));
     } catch (err) {
       console.error('ZiiBot reply error:', err);
-      setReplies((prev) => ({ ...prev, [commentId]: '❌ Error from ZiiBot' }));
+      setReplies((prev) => ({
+        ...prev,
+        [commentId]: '❌ Error from ZiiBot',
+      }));
     } finally {
       setLoadingReply(null);
     }
@@ -51,7 +59,14 @@ const ZiiCommentFeed = ({ postId }: { postId: string | number }) => {
           key={comment.id}
           className="bg-gray-50 p-3 rounded-xl border shadow-sm space-y-2"
         >
-          <div className="text-sm text-gray-800">{comment.content}</div>
+          <div className="text-sm text-gray-800">
+            {comment.username && (
+              <span className="font-semibold mr-2 text-purple-700">
+                {comment.username}:
+              </span>
+            )}
+            {comment.content}
+          </div>
 
           <button
             className={`text-xs px-2 py-1 rounded-full ${
