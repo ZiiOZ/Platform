@@ -13,21 +13,16 @@ export default function ZiiPostForm() {
     try {
       let image_url = '';
 
+      // ✅ Upload image to Supabase Storage (post-images)
       if (image) {
         const fileExt = image.name.split('.').pop();
         const filePath = `${Date.now()}.${fileExt}`;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('post-images')
-          .upload(filePath, image, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+          .upload(filePath, image, { cacheControl: '3600', upsert: false });
 
-        if (uploadError) {
-          console.error('❌ Upload Error:', uploadError);
-          throw uploadError;
-        }
+        if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabase.storage
           .from('post-images')
@@ -37,6 +32,7 @@ export default function ZiiPostForm() {
         console.log('✅ Image URL:', image_url);
       }
 
+      // ✅ Call backend AI API to get hook and hashtags
       const aiRes = await fetch('https://ziioz-backend-platform.onrender.com/api/ai-post-enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,6 +41,7 @@ export default function ZiiPostForm() {
 
       const aiData = await aiRes.json();
 
+      // ✅ Insert post into Supabase
       const { error: insertError } = await supabase.from('posts').insert({
         username: 'Anonymous',
         content,
@@ -53,16 +50,13 @@ export default function ZiiPostForm() {
         hashtags: (aiData.hashtags || []).join(', '),
       });
 
-      if (insertError) {
-        console.error('❌ Insert Error:', insertError);
-        throw insertError;
-      }
+      if (insertError) throw insertError;
 
       setContent('');
       setImage(null);
       alert('✅ Post uploaded with AI enhancements!');
     } catch (err) {
-      console.error('❌ Unexpected Error:', err);
+      console.error('❌ Upload failed:', err);
       alert('❌ Failed to upload. Please try again.');
     } finally {
       setLoading(false);
