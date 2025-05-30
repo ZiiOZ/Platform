@@ -1,14 +1,21 @@
 {
   "compilerOptions": {
-    "target": "es6",                         // Output modern JS
-    "module": "commonjs",                    // ✅ Fixes the Render issue
-    "rootDir": "./",                         // Use current folder as root
-    "outDir": "dist",                        // Output compiled files to dist/
-    "esModuleInterop": true,                 // Allow default imports from CJS
-    "strict": true,                          // Enable strict mode
-    "skipLibCheck": true,                    // Faster builds
-    "forceConsistentCasingInFileNames": true // Catch import case mismatches
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*"]
+    }
   },
-  "include": ["index.ts"],
-  "exclude": ["node_modules"]
+  "include": ["./**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

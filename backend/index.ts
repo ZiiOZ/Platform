@@ -3,16 +3,15 @@ import cors from 'cors';
 
 import ziibotReplyRoute from './api/ziibot-reply';
 import aiPostEnhanceRoute from './api/ai-post-enhance';
-import commentsRoute from './api/comments';
+import commentsRoute from './api/comments.api';
 
-const app = express(); // ✅ declare first
 
+const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
-// ✅ mount routes AFTER declaring app
 app.use('/api', ziibotReplyRoute);
 app.use('/api', aiPostEnhanceRoute);
 app.use('/api', commentsRoute);
