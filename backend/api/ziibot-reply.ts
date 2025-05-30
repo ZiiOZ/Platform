@@ -1,6 +1,7 @@
+// backend/api/ziibot-reply.ts
 import express from 'express';
 import OpenAI from 'openai';
-import { supabase } from '../backend/supabaseServerClient';
+import { supabase } from '../supabaseServerClient';
 
 const router = express.Router();
 
@@ -24,8 +25,7 @@ router.post('/ziibot-reply', async (req, res) => {
     const botReply = response.choices?.[0]?.message?.content;
 
     if (!botReply) {
-      console.error('[ZiiBot] No content in reply');
-      return res.status(500).json({ error: 'No response from ZiiBot' });
+      return res.status(500).json({ error: 'No reply generated' });
     }
 
     const { error } = await supabase.from('comments').insert({
@@ -35,14 +35,14 @@ router.post('/ziibot-reply', async (req, res) => {
     });
 
     if (error) {
-      console.error('[ZiiBot] Supabase insert error:', error);
-      return res.status(500).json({ error: 'Failed to save reply' });
+      console.error('Supabase insert error:', error);
+      return res.status(500).json({ error: 'Failed to insert comment' });
     }
 
     res.json({ reply: botReply });
-  } catch (err: any) {
-    console.error('[ZiiBot] OpenAI error:', JSON.stringify(err, null, 2));
-    res.status(500).json({ error: 'OpenAI failed to reply' });
+  } catch (err) {
+    console.error('[ZiiBot Error]', err);
+    res.status(500).json({ error: 'AI Error' });
   }
 });
 
