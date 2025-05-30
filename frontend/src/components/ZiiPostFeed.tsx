@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { BoostButton } from './BoostButton'; // adjust path as needed
+import { BoostButton } from './BoostButton';
+import ZiiCommentFeed from './ZiiCommentFeed'; // ✅ Add this
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL!,
@@ -9,10 +10,12 @@ const supabase = createClient(
 
 interface Post {
   id: number;
-  title?: string;
-  content?: string;
+  title: string;
+  content: string;
   image_url?: string;
   boosts: number;
+  hook?: string;
+  hashtags?: string[];
 }
 
 export default function ZiiPostFeed() {
@@ -42,10 +45,6 @@ export default function ZiiPostFeed() {
     return <div className="text-center py-10 text-gray-600">Loading posts...</div>;
   }
 
-  if (posts.length === 0) {
-    return <div className="text-center py-10 text-gray-500">No posts found.</div>;
-  }
-
   return (
     <div className="space-y-6 p-4">
       {posts.map((post) => (
@@ -53,25 +52,38 @@ export default function ZiiPostFeed() {
           key={post.id}
           className="bg-white rounded-2xl border border-gray-200 shadow-md p-5 space-y-3 transition hover:shadow-lg"
         >
-          {post.title && (
-            <div className="text-lg font-semibold text-gray-900">{post.title}</div>
+          <div className="text-lg font-semibold text-gray-900">{post.title}</div>
+
+          {post.hook && (
+            <div className="text-purple-600 font-semibold text-sm italic">
+              {post.hook}
+            </div>
           )}
 
-          {post.image_url ? (
+          {post.image_url && (
             <img
               src={post.image_url}
               alt="Post"
               className="w-full h-auto rounded-xl border object-cover"
             />
-          ) : null}
+          )}
 
-          {post.content && (
-            <div className="text-sm text-gray-700">{post.content}</div>
+          <div className="text-sm text-gray-700">{post.content}</div>
+
+          {post.hashtags && post.hashtags.length > 0 && (
+            <div className="text-xs text-blue-500 pt-1">
+              {post.hashtags.map((tag, i) => (
+                <span key={i} className="mr-2">#{tag}</span>
+              ))}
+            </div>
           )}
 
           <div className="pt-2">
             <BoostButton postId={post.id} initialBoosts={post.boosts || 0} />
           </div>
+
+          {/* ✅ Add ZiiCommentFeed right here */}
+          <ZiiCommentFeed postId={post.id} />
         </div>
       ))}
     </div>

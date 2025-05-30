@@ -1,21 +1,21 @@
 import express from 'express';
 import OpenAI from 'openai';
-import { supabase } from '../backend/supabaseServerClient';
+import { supabase } from '../supabaseServerClient';
 
 const router = express.Router();
 
-// ✅ Log check: confirm key is loaded
-console.log('[ZiiBot] OpenAI Key Loaded:', !!process.env.OPENAI_API_KEY);
-
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY!,
 });
 
 router.post('/ziibot-reply', async (req, res) => {
   const { comment, post_id } = req.body;
 
-  // ✅ Log input payload
-  console.log('[ZiiBot] Incoming comment:', comment, '| post_id:', post_id);
+  if (!comment || !post_id) {
+    return res.status(400).json({ error: 'Missing comment or post_id' });
+  }
+
+  console.log('[ZiiBot] Incoming:', { comment, post_id });
 
   try {
     const response = await openai.chat.completions.create({
@@ -25,12 +25,9 @@ router.post('/ziibot-reply', async (req, res) => {
 
     const botReply = response.choices?.[0]?.message?.content;
 
-    // ✅ Log OpenAI reply
-    console.log('[ZiiBot] AI Reply:', botReply);
-
     if (!botReply) {
-      console.error('[ZiiBot] No content in reply');
-      return res.status(500).json({ error: 'No response from ZiiBot' });
+      console.error('[ZiiBot] Empty AI reply');
+      return res.status(500).json({ error: 'No reply from AI' });
     }
 
     const { error } = await supabase.from('comments').insert({
@@ -40,15 +37,15 @@ router.post('/ziibot-reply', async (req, res) => {
     });
 
     if (error) {
-      console.error('[ZiiBot] Supabase insert error:', error);
-      return res.status(500).json({ error: 'Failed to save reply' });
+      console.error('[ZiiBot] Supabase insert error:', error.message);
+      return res.status(500).json({ error: 'Failed to save ZiiBot reply' });
     }
 
+    console.log('[ZiiBot] Reply saved and returned');
     res.json({ reply: botReply });
   } catch (err: any) {
-    // ✅ Enhanced error visibility
-    console.error('[ZiiBot] OpenAI error details:', JSON.stringify(err, null, 2));
-    res.status(500).json({ error: 'OpenAI failed to reply' });
+    console.error('[ZiiBot] OpenAI error:', JSON.stringify(err, null, 2));
+    res.status(500).json({ error: 'ZiiBot failed to respond' });
   }
 });
 
