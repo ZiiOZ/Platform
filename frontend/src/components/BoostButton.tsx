@@ -42,13 +42,15 @@ export function BoostButton({ postId, initialBoosts }: BoostButtonProps) {
 
   return (
     <button
-      className={`px-3 py-1 text-white rounded-md ${
-        boosted ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'
-      }`}
       onClick={handleBoost}
       disabled={boosted}
+      className={`text-sm font-medium px-4 py-2 rounded-full transition ${
+        boosted
+          ? 'text-gray-400 bg-gray-100 border border-gray-300 cursor-not-allowed'
+          : 'text-white bg-purple-600 hover:bg-purple-700 shadow active:scale-95'
+      }`}
     >
-      🔥 Boost ({boosts})
+      🚀 Boost ({boosts})
     </button>
   );
 }
