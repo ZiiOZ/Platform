@@ -1,5 +1,4 @@
-// src/App.tsx
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ZiiPostForm from './components/ZiiPostForm';
 import ZiiPostFeed from './components/ZiiPostFeed';
 import ZiiPostDetail from './components/ZiiPostDetail';

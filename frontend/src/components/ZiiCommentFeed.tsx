@@ -17,7 +17,7 @@ const ZiiCommentFeed = ({ postId }: { postId: string | number }) => {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await fetch(`/api/comments?postId=${postId}`);
+      const res = await fetch(`https://ziioz-backend-platform.onrender.com/api/comments?postId=${postId}`);
         const data = await res.json();
         setComments(data || []);
       } catch (err) {
